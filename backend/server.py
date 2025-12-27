@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 import bcrypt
 import jwt
 import httpx
@@ -27,6 +28,58 @@ db = client[os.environ['DB_NAME']]
 JWT_SECRET = os.environ.get('JWT_SECRET', 'workmonitor-secret-key-2024')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRY_HOURS = 168  # 7 days
+
+# Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "monthly": {
+        "name": "Monthly",
+        "duration_months": 1,
+        "base_price_per_user": 2.00,
+        "discount_percent": 0,
+        "price_per_user": 2.00
+    },
+    "quarterly": {
+        "name": "Quarterly", 
+        "duration_months": 3,
+        "base_price_per_user": 2.00,
+        "discount_percent": 5,
+        "price_per_user": 1.90  # 5% off
+    },
+    "biannual": {
+        "name": "6 Months",
+        "duration_months": 6,
+        "base_price_per_user": 2.00,
+        "discount_percent": 10,
+        "price_per_user": 1.80  # 10% off
+    },
+    "yearly": {
+        "name": "Yearly",
+        "duration_months": 12,
+        "base_price_per_user": 2.00,
+        "discount_percent": 20,
+        "price_per_user": 1.60  # 20% off
+    }
+}
+
+# Services included in all plans
+INCLUDED_SERVICES = [
+    "Time Tracking",
+    "Screenshot Monitoring",
+    "Activity Tracking",
+    "Project Management",
+    "Task Management",
+    "Attendance Tracking",
+    "Timesheet Management",
+    "Leave Management",
+    "Shift Scheduling",
+    "Payroll Management",
+    "Invoice Generation",
+    "Real-time Dashboard",
+    "Team Management",
+    "Reports & Analytics",
+    "WebSocket Real-time Updates",
+    "Role-based Access Control"
+]
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
