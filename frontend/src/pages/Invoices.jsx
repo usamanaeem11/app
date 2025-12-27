@@ -219,39 +219,60 @@ export default function Invoices() {
     }
   };
 
-  const exportInvoicePDF = (invoice) => {
-    // Create a simple text-based invoice for download
-    const content = `
-INVOICE
-========================================
-Invoice #: ${invoice.invoice_number}
-Date: ${format(new Date(invoice.created_at), 'MMM d, yyyy')}
-Due Date: ${format(new Date(invoice.due_date), 'MMM d, yyyy')}
-
-Bill To: ${invoice.client_name}
-
-----------------------------------------
-ITEMS
-----------------------------------------
-${invoice.items.map(item => `${item.description}\n  ${item.hours}h × $${item.rate}/hr = $${item.amount.toFixed(2)}`).join('\n\n')}
-
-----------------------------------------
-Subtotal: $${invoice.subtotal.toFixed(2)}
-Tax (${invoice.tax_rate}%): $${invoice.tax_amount.toFixed(2)}
-----------------------------------------
-TOTAL: $${invoice.total.toFixed(2)}
-========================================
-${invoice.notes ? `\nNotes: ${invoice.notes}` : ''}
-    `.trim();
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${invoice.invoice_number}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success('Invoice exported');
+  const exportInvoicePDF = async (invoice) => {
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-export' });
+      
+      // Prepare invoice data for PDF generation
+      const pdfData = {
+        invoice_number: invoice.invoice_number,
+        invoice_date: format(new Date(invoice.created_at), 'yyyy-MM-dd'),
+        due_date: format(new Date(invoice.due_date), 'yyyy-MM-dd'),
+        company_name: user?.company_name || 'WorkMonitor',
+        company_address: '',
+        company_email: user?.email || '',
+        client_name: invoice.client_name,
+        client_address: '',
+        client_email: '',
+        items: invoice.items.map(item => ({
+          description: item.description,
+          quantity: item.hours || 1,
+          unit_price: item.rate || item.amount,
+          total: item.amount
+        })),
+        subtotal: invoice.subtotal,
+        tax_rate: invoice.tax_rate,
+        tax_amount: invoice.tax_amount,
+        total: invoice.total,
+        notes: invoice.notes || '',
+        currency: 'USD'
+      };
+      
+      // Generate PDF via API
+      const response = await pdfAPI.generateInvoice(pdfData);
+      
+      // Convert base64 to blob and download
+      const byteCharacters = atob(response.data.pdf_base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.data.filename || `${invoice.invoice_number}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Invoice PDF downloaded!', { id: 'pdf-export' });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('Failed to generate PDF', { id: 'pdf-export' });
+    }
   };
 
   const totals = calculateTotals();
