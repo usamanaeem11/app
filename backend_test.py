@@ -115,7 +115,7 @@ class WorkMonitorAPITester:
         # Create a new user for login test
         timestamp = datetime.now().strftime("%H%M%S")
         register_data = {
-            "email": f"logintest_{timestamp}@workmonitor.test",
+            "email": f"logintest_{timestamp}@example.com",
             "password": "LoginTest123!",
             "name": f"Login Test User {timestamp}",
             "company_name": f"Login Test Company {timestamp}"
