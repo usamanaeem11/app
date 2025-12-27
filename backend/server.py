@@ -2271,8 +2271,192 @@ async def websocket_endpoint(websocket: WebSocket, company_id: str):
 async def root():
     return {"message": "WorkMonitor API v1.0", "status": "running"}
 
-# Include router
+# ==================== STRIPE WEBHOOK ====================
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    api_key = os.environ.get('STRIPE_API_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
+    
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Process successful payments
+        if webhook_response.payment_status == "paid":
+            metadata = webhook_response.metadata
+            session_id = webhook_response.session_id
+            
+            # Check if already processed
+            existing = await db.payment_transactions.find_one({"session_id": session_id})
+            if existing and existing.get("status") == "completed":
+                return {"status": "already_processed"}
+            
+            # Create/update subscription based on payment
+            if metadata.get("plan"):
+                plan = metadata["plan"]
+                num_users = int(metadata.get("num_users", 1))
+                duration_months = int(metadata.get("duration_months", 1))
+                
+                # Get company_id from metadata or find by session
+                company_id = metadata.get("company_id")
+                
+                if company_id:
+                    start_date = datetime.now(timezone.utc)
+                    end_date = start_date + relativedelta(months=duration_months)
+                    
+                    subscription_id = f"sub_{uuid.uuid4().hex[:12]}"
+                    subscription = {
+                        "subscription_id": subscription_id,
+                        "company_id": company_id,
+                        "plan": plan,
+                        "plan_name": metadata.get("plan_name", plan.title()),
+                        "num_users": num_users,
+                        "price_per_user": float(metadata.get("price_per_user", 2.00)),
+                        "total_amount": webhook_response.amount_total / 100,  # Convert from cents
+                        "discount_percent": int(metadata.get("discount_percent", 0)),
+                        "starts_at": start_date.isoformat(),
+                        "expires_at": end_date.isoformat(),
+                        "status": "active",
+                        "payment_session_id": session_id,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    
+                    # Deactivate existing subscriptions
+                    await db.subscriptions.update_many(
+                        {"company_id": company_id, "status": "active"},
+                        {"$set": {"status": "superseded"}}
+                    )
+                    
+                    await db.subscriptions.insert_one(subscription)
+            
+            # Record payment transaction
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {
+                    "session_id": session_id,
+                    "event_type": webhook_response.event_type,
+                    "payment_status": webhook_response.payment_status,
+                    "amount": webhook_response.amount_total / 100,
+                    "metadata": metadata,
+                    "status": "completed",
+                    "completed_at": datetime.now(timezone.utc).isoformat()
+                }},
+                upsert=True
+            )
+        
+        return {"status": "success", "event_type": webhook_response.event_type}
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+# ==================== SUBSCRIPTION ACTIVATION ====================
+@api_router.post("/subscription/activate")
+async def activate_subscription_after_payment(
+    session_id: str,
+    request: Request,
+    user: dict = Depends(get_current_user)
+):
+    """Activate subscription after successful Stripe payment"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can activate subscription")
+    
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutStatusResponse
+    
+    api_key = os.environ.get('STRIPE_API_KEY')
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
+    
+    try:
+        # Get checkout status
+        status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        if status.payment_status != "paid":
+            raise HTTPException(status_code=400, detail="Payment not completed")
+        
+        # Check if already processed
+        existing = await db.subscriptions.find_one({"payment_session_id": session_id})
+        if existing:
+            return {"status": "already_activated", "subscription_id": existing["subscription_id"]}
+        
+        metadata = status.metadata
+        plan = metadata.get("plan", "monthly")
+        num_users = int(metadata.get("num_users", 1))
+        duration_months = int(metadata.get("duration_months", 1))
+        
+        start_date = datetime.now(timezone.utc)
+        end_date = start_date + relativedelta(months=duration_months)
+        
+        subscription_id = f"sub_{uuid.uuid4().hex[:12]}"
+        subscription = {
+            "subscription_id": subscription_id,
+            "company_id": user["company_id"],
+            "admin_user_id": user["user_id"],
+            "plan": plan,
+            "plan_name": metadata.get("plan_name", plan.title()),
+            "num_users": num_users,
+            "price_per_user": float(metadata.get("price_per_user", 2.00)),
+            "total_amount": status.amount_total / 100,
+            "discount_percent": int(metadata.get("discount_percent", 0)),
+            "starts_at": start_date.isoformat(),
+            "expires_at": end_date.isoformat(),
+            "status": "active",
+            "payment_session_id": session_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Deactivate existing subscriptions
+        await db.subscriptions.update_many(
+            {"company_id": user["company_id"], "status": "active"},
+            {"$set": {"status": "superseded"}}
+        )
+        
+        await db.subscriptions.insert_one(subscription)
+        
+        # Record payment transaction
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {
+                "session_id": session_id,
+                "company_id": user["company_id"],
+                "user_id": user["user_id"],
+                "payment_status": status.payment_status,
+                "amount": status.amount_total / 100,
+                "metadata": metadata,
+                "status": "completed",
+                "completed_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+        
+        return {
+            "status": "activated",
+            "subscription_id": subscription_id,
+            "expires_at": end_date.isoformat(),
+            "plan": plan,
+            "num_users": num_users
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to activate subscription: {str(e)}")
+
+# Include routers
 app.include_router(api_router)
+api_router.include_router(payments_router)
+api_router.include_router(ai_insights_router)
 
 # CORS
 app.add_middleware(
