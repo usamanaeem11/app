@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { companyAPI } from '../lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { companyAPI, calendarAPI, ssoAPI, emailAPI, storageAPI } from '../lib/api';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Switch } from '../components/ui/switch';
@@ -23,8 +23,16 @@ import {
   Bell,
   Loader2,
   Save,
+  Calendar,
+  Mail,
+  Cloud,
+  Key,
+  CheckCircle2,
+  XCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
 
 const timezones = [
   'UTC',
