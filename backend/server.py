@@ -19,6 +19,11 @@ from contextlib import asynccontextmanager
 # Import route modules
 from routes.payments import router as payments_router
 from routes.ai_insights import router as ai_insights_router
+from routes.storage import router as storage_router
+from routes.email import router as email_router
+from routes.pdf_generator import router as pdf_router
+from routes.google_calendar import router as calendar_router
+from routes.sso import router as sso_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
