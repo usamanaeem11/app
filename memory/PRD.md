@@ -22,50 +22,49 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 - Real-time dashboard with WebSocket updates
 - Role-based access control (Admin, Manager, HR, Employee)
 - Email/Password + Google OAuth authentication
+- Project/Task management
+- Attendance tracking with clock in/out
+- Shift scheduling
+- Invoice generation
 
-## What's Been Implemented (December 27, 2025)
+## What's Been Implemented
 
-### Backend (FastAPI + MongoDB)
+### Phase 1 (December 27, 2025) - MVP
 - [x] User authentication (JWT + Emergent Google OAuth)
 - [x] Company management with tracking policies
 - [x] Time entry CRUD with active tracking
-- [x] Screenshot management API
-- [x] Activity logs API
+- [x] Screenshot management API (MOCKED - demo data)
+- [x] Activity logs API (MOCKED - demo data)
 - [x] Timesheet generation and approval
 - [x] Leave request management
-- [x] Payroll generation and processing
+- [x] Basic payroll generation and processing
 - [x] Dashboard statistics API
 - [x] Team status API (live activity)
 - [x] WebSocket for real-time updates
 - [x] Role-based access control
+- [x] Dark "Control Room" theme UI
 
-### Frontend (React + Tailwind CSS)
-- [x] Login/Signup pages with Google OAuth
-- [x] Dashboard with real-time stats and charts
-- [x] Time Tracking page with calendar view
-- [x] Screenshots gallery (demo data)
-- [x] Activity monitor with app usage
-- [x] Timesheets list with approval workflow
-- [x] Team management with invites
-- [x] Leaves management
-- [x] Payroll summary and export
-- [x] Settings page (company, tracking, privacy)
-- [x] Dark "Control Room" theme
+### Phase 2 (December 27, 2025) - Core HRMS Features
+- [x] **Project Management**: Create/edit/delete projects, track hours per project, budget tracking
+- [x] **Task Management**: Full CRUD, assignees, priorities, statuses, estimated hours
+- [x] **Attendance System**: Clock in/out, late detection, work hours/overtime calculation
+- [x] **Attendance Reports**: Monthly overview calendar, team attendance report with stats
+- [x] **Shift Scheduling**: Create shifts with times/days, assign to team members, calendar view
+- [x] **Invoice Generation**: Create invoices with line items, tax calculation, status workflow (draft/sent/paid), export
 
 ## Prioritized Backlog
 
 ### P0 - Critical (Next Phase)
 - [ ] Desktop tracker app (Electron) for actual screenshot capture
-- [ ] S3/cloud storage integration for screenshots
-- [ ] Actual idle detection algorithm
+- [ ] S3/cloud storage integration for screenshots on Contabo VPS
+- [ ] Real idle detection algorithm (keyboard/mouse monitoring)
 - [ ] Browser extension for URL tracking
 
 ### P1 - Important
-- [ ] Project/task management
 - [ ] Multiple currency support for payroll
-- [ ] Invoice generation
-- [ ] Attendance reports
-- [ ] Shift scheduling
+- [ ] PDF invoice generation (currently exports as text)
+- [ ] Email notifications for approvals
+- [ ] Recurring shifts auto-assignment
 
 ### P2 - Nice to Have
 - [ ] AI productivity insights
@@ -76,10 +75,10 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 
 ## Tech Stack
 - **Backend**: FastAPI, MongoDB, Python
-- **Frontend**: React, Tailwind CSS, Shadcn/UI
+- **Frontend**: React, Tailwind CSS, Shadcn/UI, Recharts
 - **Auth**: JWT + Emergent Google OAuth
 - **Real-time**: WebSocket
-- **Storage**: MongoDB GridFS (demo), S3 (planned)
+- **Storage**: MongoDB (local), planned: S3-compatible on Contabo VPS
 
 ## Database Collections
 - users
@@ -92,6 +91,12 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 - payroll
 - user_sessions
 - invites
+- projects
+- tasks
+- shifts
+- shift_assignments
+- attendance
+- invoices
 
 ## API Routes
 - /api/auth/* - Authentication
@@ -104,10 +109,16 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 - /api/leaves - Leave management
 - /api/payroll - Payroll processing
 - /api/dashboard/* - Dashboard stats
+- /api/projects - Project management
+- /api/tasks - Task management
+- /api/shifts - Shift definitions
+- /api/shift-assignments - Shift assignments
+- /api/attendance/* - Attendance tracking
+- /api/invoices - Invoice management
 
 ## Next Tasks
 1. Build Electron desktop tracker for actual monitoring
-2. Integrate S3 for screenshot storage
+2. Set up S3-compatible storage on Contabo VPS
 3. Implement real idle detection
-4. Add project/task management
-5. Build attendance reports
+4. Add PDF export for invoices
+5. Email notifications system
