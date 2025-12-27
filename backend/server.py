@@ -1224,6 +1224,570 @@ async def get_activity_chart(days: int = 7, user: dict = Depends(get_current_use
     
     return result
 
+# ==================== PROJECT ROUTES ====================
+@api_router.post("/projects")
+async def create_project(project: ProjectCreate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    project_id = f"project_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "project_id": project_id,
+        "company_id": user["company_id"],
+        "name": project.name,
+        "description": project.description,
+        "client_name": project.client_name,
+        "budget_hours": project.budget_hours,
+        "hourly_rate": project.hourly_rate,
+        "status": project.status,
+        "color": project.color,
+        "created_by": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.projects.insert_one(doc)
+    return {"project_id": project_id, "message": "Project created"}
+
+@api_router.get("/projects")
+async def get_projects(status: Optional[str] = None, user: dict = Depends(get_current_user)):
+    query = {"company_id": user["company_id"]}
+    if status:
+        query["status"] = status
+    
+    projects = await db.projects.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Add tracked hours for each project
+    for project in projects:
+        entries = await db.time_entries.find(
+            {"project_id": project["project_id"]},
+            {"duration": 1, "_id": 0}
+        ).to_list(10000)
+        project["tracked_hours"] = round(sum(e.get("duration", 0) for e in entries) / 3600, 2)
+        
+        # Count tasks
+        task_count = await db.tasks.count_documents({"project_id": project["project_id"]})
+        project["task_count"] = task_count
+    
+    return projects
+
+@api_router.get("/projects/{project_id}")
+async def get_project(project_id: str, user: dict = Depends(get_current_user)):
+    project = await db.projects.find_one(
+        {"project_id": project_id, "company_id": user["company_id"]},
+        {"_id": 0}
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get tracked hours
+    entries = await db.time_entries.find(
+        {"project_id": project_id},
+        {"duration": 1, "_id": 0}
+    ).to_list(10000)
+    project["tracked_hours"] = round(sum(e.get("duration", 0) for e in entries) / 3600, 2)
+    
+    return project
+
+@api_router.put("/projects/{project_id}")
+async def update_project(project_id: str, data: ProjectUpdate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if update_data:
+        await db.projects.update_one(
+            {"project_id": project_id, "company_id": user["company_id"]},
+            {"$set": update_data}
+        )
+    return {"message": "Project updated"}
+
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.projects.delete_one({"project_id": project_id, "company_id": user["company_id"]})
+    return {"message": "Project deleted"}
+
+# ==================== TASK ROUTES ====================
+@api_router.post("/tasks")
+async def create_task(task: TaskCreate, user: dict = Depends(get_current_user)):
+    task_id = f"task_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "task_id": task_id,
+        "project_id": task.project_id,
+        "company_id": user["company_id"],
+        "name": task.name,
+        "description": task.description,
+        "assigned_to": task.assigned_to,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "priority": task.priority,
+        "estimated_hours": task.estimated_hours,
+        "status": task.status,
+        "created_by": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tasks.insert_one(doc)
+    return {"task_id": task_id, "message": "Task created"}
+
+@api_router.get("/tasks")
+async def get_tasks(
+    project_id: Optional[str] = None,
+    status: Optional[str] = None,
+    assigned_to: Optional[str] = None,
+    user: dict = Depends(get_current_user)
+):
+    query = {"company_id": user["company_id"]}
+    if project_id:
+        query["project_id"] = project_id
+    if status:
+        query["status"] = status
+    if assigned_to:
+        query["assigned_to"] = assigned_to
+    
+    tasks = await db.tasks.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Add tracked hours and assignee name
+    for task in tasks:
+        entries = await db.time_entries.find(
+            {"task_id": task["task_id"]},
+            {"duration": 1, "_id": 0}
+        ).to_list(1000)
+        task["tracked_hours"] = round(sum(e.get("duration", 0) for e in entries) / 3600, 2)
+        
+        if task.get("assigned_to"):
+            assignee = await db.users.find_one({"user_id": task["assigned_to"]}, {"name": 1, "_id": 0})
+            task["assignee_name"] = assignee.get("name") if assignee else None
+    
+    return tasks
+
+@api_router.get("/tasks/{task_id}")
+async def get_task(task_id: str, user: dict = Depends(get_current_user)):
+    task = await db.tasks.find_one(
+        {"task_id": task_id, "company_id": user["company_id"]},
+        {"_id": 0}
+    )
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+@api_router.put("/tasks/{task_id}")
+async def update_task(task_id: str, data: TaskUpdate, user: dict = Depends(get_current_user)):
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if "due_date" in update_data and update_data["due_date"]:
+        update_data["due_date"] = update_data["due_date"].isoformat()
+    
+    if update_data:
+        await db.tasks.update_one(
+            {"task_id": task_id, "company_id": user["company_id"]},
+            {"$set": update_data}
+        )
+    return {"message": "Task updated"}
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, user: dict = Depends(get_current_user)):
+    await db.tasks.delete_one({"task_id": task_id, "company_id": user["company_id"]})
+    return {"message": "Task deleted"}
+
+# ==================== SHIFT ROUTES ====================
+@api_router.post("/shifts")
+async def create_shift(shift: ShiftCreate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    shift_id = f"shift_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "shift_id": shift_id,
+        "company_id": user["company_id"],
+        "name": shift.name,
+        "start_time": shift.start_time,
+        "end_time": shift.end_time,
+        "days": shift.days,
+        "break_duration": shift.break_duration,
+        "color": shift.color,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.shifts.insert_one(doc)
+    return {"shift_id": shift_id, "message": "Shift created"}
+
+@api_router.get("/shifts")
+async def get_shifts(user: dict = Depends(get_current_user)):
+    shifts = await db.shifts.find(
+        {"company_id": user["company_id"]},
+        {"_id": 0}
+    ).to_list(100)
+    return shifts
+
+@api_router.put("/shifts/{shift_id}")
+async def update_shift(shift_id: str, data: dict, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.shifts.update_one(
+        {"shift_id": shift_id, "company_id": user["company_id"]},
+        {"$set": data}
+    )
+    return {"message": "Shift updated"}
+
+@api_router.delete("/shifts/{shift_id}")
+async def delete_shift(shift_id: str, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.shifts.delete_one({"shift_id": shift_id, "company_id": user["company_id"]})
+    return {"message": "Shift deleted"}
+
+@api_router.post("/shift-assignments")
+async def create_shift_assignment(assignment: ShiftAssignmentCreate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    assignment_id = f"assign_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "assignment_id": assignment_id,
+        "company_id": user["company_id"],
+        "user_id": assignment.user_id,
+        "shift_id": assignment.shift_id,
+        "date": assignment.date.isoformat(),
+        "notes": assignment.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.shift_assignments.insert_one(doc)
+    return {"assignment_id": assignment_id}
+
+@api_router.get("/shift-assignments")
+async def get_shift_assignments(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    user_id: Optional[str] = None,
+    user: dict = Depends(get_current_user)
+):
+    query = {"company_id": user["company_id"]}
+    if user["role"] == "employee":
+        query["user_id"] = user["user_id"]
+    elif user_id:
+        query["user_id"] = user_id
+    
+    if start_date:
+        query["date"] = {"$gte": start_date}
+    if end_date:
+        if "date" in query:
+            query["date"]["$lte"] = end_date
+        else:
+            query["date"] = {"$lte": end_date}
+    
+    assignments = await db.shift_assignments.find(query, {"_id": 0}).to_list(500)
+    
+    # Add shift and user details
+    for a in assignments:
+        shift = await db.shifts.find_one({"shift_id": a["shift_id"]}, {"_id": 0})
+        a["shift"] = shift
+        user_doc = await db.users.find_one({"user_id": a["user_id"]}, {"name": 1, "picture": 1, "_id": 0})
+        a["user_name"] = user_doc.get("name") if user_doc else None
+        a["user_picture"] = user_doc.get("picture") if user_doc else None
+    
+    return assignments
+
+# ==================== ATTENDANCE ROUTES ====================
+@api_router.post("/attendance/clock-in")
+async def clock_in(user: dict = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Check if already clocked in
+    existing = await db.attendance.find_one({
+        "user_id": user["user_id"],
+        "date": today.isoformat()
+    })
+    
+    if existing and existing.get("clock_in"):
+        raise HTTPException(status_code=400, detail="Already clocked in today")
+    
+    now = datetime.now(timezone.utc)
+    
+    # Get user's shift for today
+    today_weekday = today.weekday()
+    shift_assignment = await db.shift_assignments.find_one({
+        "user_id": user["user_id"],
+        "date": today.isoformat()
+    })
+    
+    status = "present"
+    if shift_assignment:
+        shift = await db.shifts.find_one({"shift_id": shift_assignment["shift_id"]})
+        if shift:
+            shift_start = datetime.strptime(shift["start_time"], "%H:%M").replace(
+                year=now.year, month=now.month, day=now.day,
+                tzinfo=timezone.utc
+            )
+            if now > shift_start + timedelta(minutes=15):
+                status = "late"
+    
+    attendance_id = f"attendance_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "attendance_id": attendance_id,
+        "user_id": user["user_id"],
+        "user_name": user["name"],
+        "company_id": user["company_id"],
+        "date": today.isoformat(),
+        "clock_in": now.isoformat(),
+        "clock_out": None,
+        "status": status,
+        "work_hours": 0,
+        "overtime": 0
+    }
+    
+    if existing:
+        await db.attendance.update_one(
+            {"user_id": user["user_id"], "date": today.isoformat()},
+            {"$set": {"clock_in": now.isoformat(), "status": status}}
+        )
+    else:
+        await db.attendance.insert_one(doc)
+    
+    return {"message": "Clocked in successfully", "status": status, "time": now.isoformat()}
+
+@api_router.post("/attendance/clock-out")
+async def clock_out(user: dict = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    attendance = await db.attendance.find_one({
+        "user_id": user["user_id"],
+        "date": today.isoformat()
+    })
+    
+    if not attendance or not attendance.get("clock_in"):
+        raise HTTPException(status_code=400, detail="Not clocked in today")
+    
+    if attendance.get("clock_out"):
+        raise HTTPException(status_code=400, detail="Already clocked out today")
+    
+    now = datetime.now(timezone.utc)
+    clock_in_time = datetime.fromisoformat(attendance["clock_in"])
+    work_hours = (now - clock_in_time).total_seconds() / 3600
+    
+    # Calculate overtime (assuming 8 hours is standard)
+    overtime = max(0, work_hours - 8)
+    
+    await db.attendance.update_one(
+        {"user_id": user["user_id"], "date": today.isoformat()},
+        {"$set": {
+            "clock_out": now.isoformat(),
+            "work_hours": round(work_hours, 2),
+            "overtime": round(overtime, 2)
+        }}
+    )
+    
+    return {"message": "Clocked out successfully", "work_hours": round(work_hours, 2), "overtime": round(overtime, 2)}
+
+@api_router.get("/attendance")
+async def get_attendance(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    user_id: Optional[str] = None,
+    user: dict = Depends(get_current_user)
+):
+    query = {"company_id": user["company_id"]}
+    
+    if user["role"] == "employee":
+        query["user_id"] = user["user_id"]
+    elif user_id:
+        query["user_id"] = user_id
+    
+    if start_date:
+        query["date"] = {"$gte": start_date}
+    if end_date:
+        if "date" in query:
+            query["date"]["$lte"] = end_date
+        else:
+            query["date"] = {"$lte": end_date}
+    
+    attendance = await db.attendance.find(query, {"_id": 0}).sort("date", -1).to_list(500)
+    return attendance
+
+@api_router.get("/attendance/today")
+async def get_today_attendance(user: dict = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    attendance = await db.attendance.find_one({
+        "user_id": user["user_id"],
+        "date": today.isoformat()
+    }, {"_id": 0})
+    
+    return attendance or {"status": "not_clocked_in"}
+
+@api_router.get("/attendance/report")
+async def get_attendance_report(
+    start_date: str,
+    end_date: str,
+    user: dict = Depends(get_current_user)
+):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get all team members
+    team = await db.users.find(
+        {"company_id": user["company_id"]},
+        {"_id": 0, "user_id": 1, "name": 1}
+    ).to_list(1000)
+    
+    report = []
+    for member in team:
+        attendance_records = await db.attendance.find({
+            "user_id": member["user_id"],
+            "date": {"$gte": start_date, "$lte": end_date}
+        }, {"_id": 0}).to_list(100)
+        
+        total_work_hours = sum(a.get("work_hours", 0) for a in attendance_records)
+        total_overtime = sum(a.get("overtime", 0) for a in attendance_records)
+        present_days = len([a for a in attendance_records if a.get("status") in ["present", "late"]])
+        late_days = len([a for a in attendance_records if a.get("status") == "late"])
+        absent_days = len([a for a in attendance_records if a.get("status") == "absent"])
+        
+        report.append({
+            "user_id": member["user_id"],
+            "name": member["name"],
+            "total_work_hours": round(total_work_hours, 2),
+            "total_overtime": round(total_overtime, 2),
+            "present_days": present_days,
+            "late_days": late_days,
+            "absent_days": absent_days,
+            "attendance_rate": round(present_days / max(len(attendance_records), 1) * 100, 1)
+        })
+    
+    return report
+
+# ==================== INVOICE ROUTES ====================
+@api_router.post("/invoices")
+async def create_invoice(invoice: InvoiceCreate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    invoice_id = f"invoice_{uuid.uuid4().hex[:12]}"
+    
+    # Calculate totals
+    subtotal = sum(item.get("amount", 0) for item in invoice.items)
+    tax_amount = subtotal * (invoice.tax_rate / 100)
+    total = subtotal + tax_amount
+    
+    # Generate invoice number
+    count = await db.invoices.count_documents({"company_id": user["company_id"]})
+    invoice_number = f"INV-{datetime.now().year}-{str(count + 1).zfill(4)}"
+    
+    doc = {
+        "invoice_id": invoice_id,
+        "invoice_number": invoice_number,
+        "company_id": user["company_id"],
+        "client_name": invoice.client_name,
+        "project_id": invoice.project_id,
+        "items": invoice.items,
+        "subtotal": round(subtotal, 2),
+        "tax_rate": invoice.tax_rate,
+        "tax_amount": round(tax_amount, 2),
+        "total": round(total, 2),
+        "due_date": invoice.due_date.isoformat(),
+        "notes": invoice.notes,
+        "status": "draft",
+        "created_by": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.invoices.insert_one(doc)
+    
+    return {"invoice_id": invoice_id, "invoice_number": invoice_number}
+
+@api_router.get("/invoices")
+async def get_invoices(
+    status: Optional[str] = None,
+    project_id: Optional[str] = None,
+    user: dict = Depends(get_current_user)
+):
+    if user["role"] not in ["admin", "hr", "manager"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    query = {"company_id": user["company_id"]}
+    if status:
+        query["status"] = status
+    if project_id:
+        query["project_id"] = project_id
+    
+    invoices = await db.invoices.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return invoices
+
+@api_router.get("/invoices/{invoice_id}")
+async def get_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
+    invoice = await db.invoices.find_one(
+        {"invoice_id": invoice_id, "company_id": user["company_id"]},
+        {"_id": 0}
+    )
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Get company info for invoice
+    company = await db.companies.find_one({"company_id": user["company_id"]}, {"_id": 0})
+    invoice["company"] = company
+    
+    return invoice
+
+@api_router.put("/invoices/{invoice_id}")
+async def update_invoice(invoice_id: str, data: InvoiceUpdate, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if "paid_date" in update_data and update_data["paid_date"]:
+        update_data["paid_date"] = update_data["paid_date"].isoformat()
+    
+    if update_data:
+        await db.invoices.update_one(
+            {"invoice_id": invoice_id, "company_id": user["company_id"]},
+            {"$set": update_data}
+        )
+    return {"message": "Invoice updated"}
+
+@api_router.delete("/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
+    if user["role"] not in ["admin", "hr"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.invoices.delete_one({"invoice_id": invoice_id, "company_id": user["company_id"]})
+    return {"message": "Invoice deleted"}
+
+@api_router.post("/invoices/{invoice_id}/generate-from-project")
+async def generate_invoice_from_project(
+    invoice_id: str,
+    project_id: str,
+    start_date: str,
+    end_date: str,
+    user: dict = Depends(get_current_user)
+):
+    if user["role"] not in ["admin", "hr"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get project
+    project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get time entries for the project in date range
+    entries = await db.time_entries.find({
+        "project_id": project_id,
+        "start_time": {"$gte": start_date, "$lte": end_date}
+    }, {"_id": 0}).to_list(10000)
+    
+    total_hours = sum(e.get("duration", 0) for e in entries) / 3600
+    hourly_rate = project.get("hourly_rate", 0)
+    
+    items = [{
+        "description": f"Work on {project['name']} ({start_date} to {end_date})",
+        "hours": round(total_hours, 2),
+        "rate": hourly_rate,
+        "amount": round(total_hours * hourly_rate, 2)
+    }]
+    
+    return {
+        "items": items,
+        "subtotal": round(total_hours * hourly_rate, 2),
+        "total_hours": round(total_hours, 2)
+    }
+
 # ==================== WEBSOCKET ====================
 @app.websocket("/ws/{company_id}")
 async def websocket_endpoint(websocket: WebSocket, company_id: str):
