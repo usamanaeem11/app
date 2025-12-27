@@ -24,6 +24,9 @@ import Projects from "./pages/Projects";
 import Attendance from "./pages/Attendance";
 import Shifts from "./pages/Shifts";
 import Invoices from "./pages/Invoices";
+import Subscription from "./pages/Subscription";
+import AIInsights from "./pages/AIInsights";
+import UserManagement from "./pages/UserManagement";
 
 // Router component that handles session_id detection
 function AppRouter() {
