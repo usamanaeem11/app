@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 import json
 
 # Import LLM chat from emergentintegrations
-from emergentintegrations.llm.chat import LlmChat
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
