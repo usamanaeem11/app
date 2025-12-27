@@ -1902,6 +1902,350 @@ async def generate_invoice_from_project(
         "total_hours": round(total_hours, 2)
     }
 
+# ==================== SUBSCRIPTION ROUTES (Admin Only) ====================
+@api_router.get("/subscription/plans")
+async def get_subscription_plans():
+    """Get available subscription plans - public endpoint"""
+    plans = []
+    for key, plan in SUBSCRIPTION_PLANS.items():
+        total_price_per_user = plan["price_per_user"] * plan["duration_months"]
+        plans.append({
+            "id": key,
+            "name": plan["name"],
+            "duration_months": plan["duration_months"],
+            "base_price_per_user": plan["base_price_per_user"],
+            "discount_percent": plan["discount_percent"],
+            "price_per_user_monthly": plan["price_per_user"],
+            "total_price_per_user": round(total_price_per_user, 2)
+        })
+    return {
+        "plans": plans,
+        "services": INCLUDED_SERVICES
+    }
+
+@api_router.get("/subscription")
+async def get_subscription(user: dict = Depends(get_current_user)):
+    """Get current subscription details - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can view subscription")
+    
+    subscription = await db.subscriptions.find_one(
+        {"company_id": user["company_id"]},
+        {"_id": 0}
+    )
+    
+    if subscription:
+        # Check and update status if expired
+        expires_at = datetime.fromisoformat(subscription["expires_at"])
+        if expires_at < datetime.now(timezone.utc) and subscription["status"] == "active":
+            subscription["status"] = "expired"
+            await db.subscriptions.update_one(
+                {"subscription_id": subscription["subscription_id"]},
+                {"$set": {"status": "expired"}}
+            )
+    
+    return subscription
+
+@api_router.post("/subscription")
+async def create_subscription(sub_data: SubscriptionCreate, user: dict = Depends(get_current_user)):
+    """Create or renew subscription - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can manage subscription")
+    
+    if sub_data.plan not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid plan")
+    
+    if sub_data.num_users < 1:
+        raise HTTPException(status_code=400, detail="At least 1 user required")
+    
+    plan = SUBSCRIPTION_PLANS[sub_data.plan]
+    
+    # Calculate pricing
+    price_per_user = plan["price_per_user"] * plan["duration_months"]
+    total_amount = price_per_user * sub_data.num_users
+    
+    # Calculate dates
+    start_date = datetime.now(timezone.utc)
+    end_date = start_date + relativedelta(months=plan["duration_months"])
+    
+    subscription_id = f"sub_{uuid.uuid4().hex[:12]}"
+    
+    subscription = {
+        "subscription_id": subscription_id,
+        "company_id": user["company_id"],
+        "admin_user_id": user["user_id"],
+        "plan": sub_data.plan,
+        "plan_name": plan["name"],
+        "num_users": sub_data.num_users,
+        "price_per_user": plan["price_per_user"],
+        "total_amount": round(total_amount, 2),
+        "discount_percent": plan["discount_percent"],
+        "starts_at": start_date.isoformat(),
+        "expires_at": end_date.isoformat(),
+        "status": "active",
+        "payment_method": sub_data.payment_method,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Deactivate any existing subscription
+    await db.subscriptions.update_many(
+        {"company_id": user["company_id"], "status": "active"},
+        {"$set": {"status": "superseded"}}
+    )
+    
+    await db.subscriptions.insert_one(subscription)
+    
+    return {
+        "subscription_id": subscription_id,
+        "message": "Subscription created successfully",
+        "expires_at": end_date.isoformat(),
+        "total_amount": round(total_amount, 2)
+    }
+
+@api_router.put("/subscription")
+async def update_subscription(sub_data: SubscriptionUpdate, user: dict = Depends(get_current_user)):
+    """Update subscription - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can manage subscription")
+    
+    subscription = await db.subscriptions.find_one(
+        {"company_id": user["company_id"], "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not subscription:
+        raise HTTPException(status_code=404, detail="No active subscription")
+    
+    update_data = {}
+    if sub_data.num_users is not None:
+        update_data["num_users"] = sub_data.num_users
+    if sub_data.status is not None:
+        update_data["status"] = sub_data.status
+    
+    if update_data:
+        await db.subscriptions.update_one(
+            {"subscription_id": subscription["subscription_id"]},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Subscription updated"}
+
+@api_router.get("/subscription/history")
+async def get_subscription_history(user: dict = Depends(get_current_user)):
+    """Get subscription history - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can view subscription history")
+    
+    history = await db.subscriptions.find(
+        {"company_id": user["company_id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return history
+
+# ==================== ROLE MANAGEMENT ROUTES (Admin Only) ====================
+@api_router.put("/users/{user_id}/role")
+async def update_user_role(user_id: str, role: str, user: dict = Depends(get_current_user)):
+    """Update user role - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can change roles")
+    
+    if role not in ["admin", "manager", "employee"]:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    
+    target_user = await db.users.find_one(
+        {"user_id": user_id, "company_id": user["company_id"]},
+        {"_id": 0}
+    )
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Can't demote self
+    if user_id == user["user_id"] and role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot demote yourself")
+    
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"role": role}}
+    )
+    
+    # If demoted from manager, remove assignments
+    if target_user["role"] == "manager" and role != "manager":
+        await db.manager_assignments.delete_many({"manager_id": user_id})
+    
+    return {"message": f"User role updated to {role}"}
+
+@api_router.post("/managers/{manager_id}/assign-users")
+async def assign_users_to_manager(manager_id: str, assignment: ManagerAssignment, user: dict = Depends(get_current_user)):
+    """Assign users to a manager - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can assign users to managers")
+    
+    # Verify manager exists and is a manager
+    manager = await db.users.find_one(
+        {"user_id": manager_id, "company_id": user["company_id"], "role": "manager"},
+        {"_id": 0}
+    )
+    
+    if not manager:
+        raise HTTPException(status_code=404, detail="Manager not found or user is not a manager")
+    
+    # Verify all user_ids exist
+    for uid in assignment.user_ids:
+        target = await db.users.find_one(
+            {"user_id": uid, "company_id": user["company_id"]},
+            {"_id": 0}
+        )
+        if not target:
+            raise HTTPException(status_code=400, detail=f"User {uid} not found")
+    
+    # Update or create assignment
+    await db.manager_assignments.update_one(
+        {"manager_id": manager_id, "company_id": user["company_id"]},
+        {"$set": {
+            "manager_id": manager_id,
+            "company_id": user["company_id"],
+            "user_ids": assignment.user_ids,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    return {"message": f"Assigned {len(assignment.user_ids)} users to manager"}
+
+@api_router.get("/managers/{manager_id}/users")
+async def get_manager_users(manager_id: str, user: dict = Depends(get_current_user)):
+    """Get users assigned to a manager"""
+    if user["role"] == "employee":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Managers can only see their own assignments
+    if user["role"] == "manager" and user["user_id"] != manager_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    user_ids = await get_users_for_manager(manager_id, user["company_id"])
+    
+    users = await db.users.find(
+        {"user_id": {"$in": user_ids}, "company_id": user["company_id"]},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(1000)
+    
+    return users
+
+@api_router.get("/managers")
+async def get_all_managers(user: dict = Depends(get_current_user)):
+    """Get all managers with their assigned users - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can view all managers")
+    
+    managers = await db.users.find(
+        {"company_id": user["company_id"], "role": "manager"},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(100)
+    
+    result = []
+    for mgr in managers:
+        assignment = await db.manager_assignments.find_one(
+            {"manager_id": mgr["user_id"], "company_id": user["company_id"]},
+            {"_id": 0}
+        )
+        mgr["assigned_users"] = assignment.get("user_ids", []) if assignment else []
+        mgr["assigned_user_count"] = len(mgr["assigned_users"])
+        result.append(mgr)
+    
+    return result
+
+# ==================== DISAPPROVAL LOGS ROUTES ====================
+@api_router.post("/disapprove")
+async def create_disapproval(disapproval: DisapprovalCreate, user: dict = Depends(get_current_user)):
+    """Create a disapproval log - Manager only"""
+    if user["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only managers can disapprove items")
+    
+    disapproval_id = f"disapproval_{uuid.uuid4().hex[:12]}"
+    
+    doc = {
+        "disapproval_id": disapproval_id,
+        "company_id": user["company_id"],
+        "manager_id": user["user_id"],
+        "manager_name": user["name"],
+        "item_type": disapproval.item_type,
+        "item_id": disapproval.item_id,
+        "reason": disapproval.reason,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.disapproval_logs.insert_one(doc)
+    
+    # Update the original item status
+    collection_map = {
+        "timesheet": "timesheets",
+        "leave": "leaves",
+        "attendance": "attendance"
+    }
+    
+    if disapproval.item_type in collection_map:
+        collection = db[collection_map[disapproval.item_type]]
+        id_field = f"{disapproval.item_type}_id"
+        await collection.update_one(
+            {id_field: disapproval.item_id},
+            {"$set": {
+                "status": "disapproved",
+                "disapproval_reason": disapproval.reason,
+                "disapproved_by": user["user_id"],
+                "disapproved_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    return {"disapproval_id": disapproval_id, "message": "Item disapproved"}
+
+@api_router.get("/disapproval-logs")
+async def get_disapproval_logs(
+    item_type: Optional[str] = None,
+    manager_id: Optional[str] = None,
+    user: dict = Depends(get_current_user)
+):
+    """Get disapproval logs - Admin only"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can view disapproval logs")
+    
+    query = {"company_id": user["company_id"]}
+    if item_type:
+        query["item_type"] = item_type
+    if manager_id:
+        query["manager_id"] = manager_id
+    
+    logs = await db.disapproval_logs.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return logs
+
+# ==================== UPDATED TEAM ROUTES WITH ROLE CHECKS ====================
+@api_router.get("/team/my-users")
+async def get_my_users(user: dict = Depends(get_current_user)):
+    """Get users based on role - Manager sees assigned users, Employee sees only self"""
+    if user["role"] == "admin":
+        # Admin sees everyone
+        members = await db.users.find(
+            {"company_id": user["company_id"]},
+            {"_id": 0, "password_hash": 0}
+        ).to_list(1000)
+    elif user["role"] == "manager":
+        # Manager sees only assigned users
+        user_ids = await get_users_for_manager(user["user_id"], user["company_id"])
+        members = await db.users.find(
+            {"user_id": {"$in": user_ids}, "company_id": user["company_id"]},
+            {"_id": 0, "password_hash": 0}
+        ).to_list(1000)
+    else:
+        # Employee sees only self
+        member = await db.users.find_one(
+            {"user_id": user["user_id"]},
+            {"_id": 0, "password_hash": 0}
+        )
+        members = [member] if member else []
+    
+    return members
+
 # ==================== WEBSOCKET ====================
 @app.websocket("/ws/{company_id}")
 async def websocket_endpoint(websocket: WebSocket, company_id: str):
