@@ -193,4 +193,46 @@ export const aiInsightsAPI = {
   getAppUsageBreakdown: (params) => api.get('/ai/app-usage-breakdown', { params }),
 };
 
+// PDF Generation APIs
+export const pdfAPI = {
+  generateInvoice: (data) => api.post('/pdf/invoice', data),
+  downloadInvoice: (data) => api.post('/pdf/invoice/download', data, { responseType: 'blob' }),
+  generateTimesheet: (data) => api.post('/pdf/timesheet', data),
+  downloadTimesheet: (data) => api.post('/pdf/timesheet/download', data, { responseType: 'blob' }),
+};
+
+// Email APIs
+export const emailAPI = {
+  send: (data) => api.post('/email/send', data),
+  sendCustom: (data) => api.post('/email/send-custom', data),
+  getStatus: () => api.get('/email/status'),
+  getTemplates: () => api.get('/email/templates'),
+};
+
+// Storage APIs
+export const storageAPI = {
+  uploadScreenshot: (data) => api.post('/storage/upload-screenshot', data),
+  getPresignedUrl: (fileKey) => api.post('/storage/presigned-url', { file_key: fileKey }),
+  deleteScreenshot: (screenshotId) => api.delete(`/storage/screenshot/${screenshotId}`),
+  getStatus: () => api.get('/storage/storage-status'),
+};
+
+// Calendar APIs
+export const calendarAPI = {
+  connect: () => api.get('/calendar/connect'),
+  getEvents: (params) => api.get('/calendar/events', { params }),
+  createEvent: (userId, data) => api.post(`/calendar/events?user_id=${userId}`, data),
+  syncTimeEntry: (userId, data) => api.post(`/calendar/sync-time-entry?user_id=${userId}`, data),
+  disconnect: (userId) => api.delete(`/calendar/disconnect?user_id=${userId}`),
+  getStatus: (userId) => api.get(`/calendar/status?user_id=${userId}`),
+};
+
+// SSO APIs
+export const ssoAPI = {
+  getConfig: () => api.get('/sso/config'),
+  configure: (data) => api.post('/sso/configure', data),
+  login: (relayState) => api.get('/sso/login', { params: { relay_state: relayState } }),
+  getStatus: () => api.get('/sso/status'),
+};
+
 export default api;
