@@ -1,93 +1,92 @@
 {
   "total_tests": 14,
-  "passed_tests": 1,
-  "failed_tests": 13,
-  "success_rate": 7.1,
+  "passed_tests": 14,
+  "failed_tests": 0,
+  "success_rate": 100.0,
   "results": [
     {
       "test": "API Health Check",
       "success": true,
       "details": "API is running: WorkMonitor API v1.0",
-      "timestamp": "2025-12-27T13:00:47.060379"
+      "timestamp": "2025-12-27T13:01:12.975001"
     },
     {
       "test": "User Registration",
-      "success": false,
-      "details": "Registration failed",
-      "timestamp": "2025-12-27T13:00:47.125332",
-      "response": "{'detail': [{'type': 'value_error', 'loc': ['body', 'email'], 'msg': 'value is not a valid email address: The part after the @-sign is a special-use or reserved name that cannot be used with email.', 'input': 'testuser_130047@workmonitor.test', 'ctx': {'reason': 'The part after the @-sign is a special-use or reserved name that cannot be used with email.'}}]}"
+      "success": true,
+      "details": "User created with ID: user_ec6d5da2952b",
+      "timestamp": "2025-12-27T13:01:13.242502"
     },
     {
       "test": "User Login",
-      "success": false,
-      "details": "No user data available for login test",
-      "timestamp": "2025-12-27T13:00:47.125372"
+      "success": true,
+      "details": "Login successful for user: logintest_130113@example.com",
+      "timestamp": "2025-12-27T13:01:13.843738"
     },
     {
       "test": "Auth Me",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125378"
+      "success": true,
+      "details": "User info retrieved: Test User 130112",
+      "timestamp": "2025-12-27T13:01:13.883575"
     },
     {
       "test": "Dashboard Stats",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125382"
+      "success": true,
+      "details": "Stats retrieved with 9 fields",
+      "timestamp": "2025-12-27T13:01:13.927996"
     },
     {
       "test": "Time Entry Creation",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125386"
+      "success": true,
+      "details": "Time entry created: entry_55a512489ae8",
+      "timestamp": "2025-12-27T13:01:13.968246"
     },
     {
       "test": "Time Entries Retrieval",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125389"
+      "success": true,
+      "details": "Retrieved 1 time entries",
+      "timestamp": "2025-12-27T13:01:14.027519"
     },
     {
       "test": "Active Time Entry",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125396"
+      "success": true,
+      "details": "Active entry found: entry_55a512489ae8",
+      "timestamp": "2025-12-27T13:01:14.065235"
     },
     {
       "test": "Timesheet Generation",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125400"
+      "success": true,
+      "details": "Timesheet generated: timesheet_8fea4ae229c8",
+      "timestamp": "2025-12-27T13:01:14.131807"
     },
     {
       "test": "Leave Request Creation",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125403"
+      "success": true,
+      "details": "Leave request created: leave_4d1110beed18",
+      "timestamp": "2025-12-27T13:01:14.192711"
     },
     {
       "test": "Leave Requests Retrieval",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125406"
+      "success": true,
+      "details": "Retrieved 1 leave requests",
+      "timestamp": "2025-12-27T13:01:14.228970"
     },
     {
       "test": "Team Members Listing",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125410"
+      "success": true,
+      "details": "Retrieved 1 team members",
+      "timestamp": "2025-12-27T13:01:14.267657"
     },
     {
       "test": "Company Settings Retrieval",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125413"
+      "success": true,
+      "details": "Company settings retrieved: Test Company 130112",
+      "timestamp": "2025-12-27T13:01:14.307125"
     },
     {
       "test": "Timesheets Retrieval",
-      "success": false,
-      "details": "No token available",
-      "timestamp": "2025-12-27T13:00:47.125416"
+      "success": true,
+      "details": "Retrieved 1 timesheets",
+      "timestamp": "2025-12-27T13:01:14.343700"
     }
   ]
 }
