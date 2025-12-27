@@ -188,6 +188,79 @@ class InviteCreate(BaseModel):
     email: EmailStr
     role: str = "employee"
 
+# ==================== PROJECT & TASK MODELS ====================
+class ProjectCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    client_name: Optional[str] = None
+    budget_hours: Optional[float] = None
+    hourly_rate: Optional[float] = None
+    status: str = "active"
+    color: str = "#3B82F6"
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    client_name: Optional[str] = None
+    budget_hours: Optional[float] = None
+    hourly_rate: Optional[float] = None
+    status: Optional[str] = None
+    color: Optional[str] = None
+
+class TaskCreate(BaseModel):
+    project_id: str
+    name: str
+    description: Optional[str] = None
+    assigned_to: Optional[str] = None
+    due_date: Optional[datetime] = None
+    priority: str = "medium"  # low, medium, high, urgent
+    estimated_hours: Optional[float] = None
+    status: str = "todo"  # todo, in_progress, review, done
+
+class TaskUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    assigned_to: Optional[str] = None
+    due_date: Optional[datetime] = None
+    priority: Optional[str] = None
+    estimated_hours: Optional[float] = None
+    status: Optional[str] = None
+
+# ==================== SHIFT MODELS ====================
+class ShiftCreate(BaseModel):
+    name: str
+    start_time: str  # HH:MM format
+    end_time: str  # HH:MM format
+    days: List[int]  # 0=Monday, 6=Sunday
+    break_duration: int = 60  # minutes
+    color: str = "#10B981"
+
+class ShiftAssignmentCreate(BaseModel):
+    user_id: str
+    shift_id: str
+    date: datetime
+    notes: Optional[str] = None
+
+# ==================== ATTENDANCE MODELS ====================
+class AttendanceCreate(BaseModel):
+    date: datetime
+    clock_in: Optional[datetime] = None
+    clock_out: Optional[datetime] = None
+    status: str = "present"  # present, absent, late, half_day, on_leave
+
+# ==================== INVOICE MODELS ====================
+class InvoiceCreate(BaseModel):
+    client_name: str
+    project_id: Optional[str] = None
+    items: List[dict]  # [{description, hours, rate, amount}]
+    due_date: datetime
+    notes: Optional[str] = None
+    tax_rate: float = 0
+
+class InvoiceUpdate(BaseModel):
+    status: Optional[str] = None  # draft, sent, paid, overdue, cancelled
+    paid_date: Optional[datetime] = None
+
 # Helper Functions
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
