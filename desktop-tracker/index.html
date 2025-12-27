@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
+  <title>WorkMonitor Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e4e4e7;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    
+    .container {
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: #10b981;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* Login Form */
+    .login-form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .login-form.hidden {
+      display: none;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #a1a1aa;
+      margin-bottom: 6px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e4e4e7;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #10b981;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #10b981;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #059669;
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e4e4e7;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    /* Tracker View */
+    .tracker-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .tracker-view.hidden {
+      display: none;
+    }
+    
+    .user-info {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .user-info p {
+      font-size: 14px;
+      color: #a1a1aa;
+    }
+    
+    .user-info .name {
+      font-size: 16px;
+      color: #e4e4e7;
+      font-weight: 500;
+    }
+    
+    .status-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .status-indicator {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .status-indicator.tracking {
+      background: rgba(16, 185, 129, 0.2);
+      border: 3px solid #10b981;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-indicator.idle {
+      background: rgba(161, 161, 170, 0.2);
+      border: 3px solid #71717a;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    
+    .status-indicator svg {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .status-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .status-subtext {
+      font-size: 13px;
+      color: #71717a;
+    }
+    
+    .timer {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: #10b981;
+      margin: 16px 0;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    
+    .stat-card .label {
+      font-size: 12px;
+      color: #71717a;
+      margin-bottom: 4px;
+    }
+    
+    .stat-card .value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    
+    .actions .btn {
+      flex: 1;
+    }
+    
+    /* Settings View */
+    .settings-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .settings-view.visible {
+      display: flex;
+    }
+    
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e4e4e7;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .setting-item label {
+      font-size: 14px;
+    }
+    
+    .setting-item input[type="number"] {
+      width: 80px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #e4e4e7;
+      text-align: center;
+    }
+    
+    .toggle {
+      width: 48px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .toggle.active {
+      background: #10b981;
+    }
+    
+    .toggle::after {
+      content: '';
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+    
+    .toggle.active::after {
+      transform: translateX(22px);
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 12px 0;
+      font-size: 12px;
+      color: #52525b;
+    }
+    
+    /* Error message */
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    
+    .error-message.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <h1>WorkMonitor</h1>
+    </div>
+    
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage"></div>
+    
+    <!-- Login Form -->
+    <div class="login-form" id="loginForm">
+      <div class="form-group">
+        <label>API Server URL</label>
+        <input type="text" id="apiUrl" placeholder="https://your-server.com/api">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" id="loginBtn">Sign In</button>
+    </div>
+    
+    <!-- Tracker View -->
+    <div class="tracker-view hidden" id="trackerView">
+      <div class="user-info">
+        <p>Logged in as</p>
+        <p class="name" id="userName">-</p>
+      </div>
+      
+      <div class="status-card">
+        <div class="status-indicator idle" id="statusIndicator">
+          <svg id="statusIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </div>
+        <p class="status-text" id="statusText">Not Tracking</p>
+        <p class="status-subtext" id="statusSubtext">Click Start to begin</p>
+        <div class="timer" id="timer">00:00:00</div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="label">Screenshots</p>
+          <p class="value" id="screenshotCount">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="label">Activity Level</p>
+          <p class="value" id="activityLevel">0%</p>
+        </div>
+        <div class="stat-card">
+          <p class="label">Idle Time</p>
+          <p class="value" id="idleTime">0m</p>
+        </div>
+        <div class="stat-card">
+          <p class="label">Today Total</p>
+          <p class="value" id="todayTotal">0h 0m</p>
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-primary" id="startStopBtn">Start Tracking</button>
+        <button class="btn btn-secondary" id="screenshotBtn" disabled>📷</button>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-secondary" id="settingsBtn">Settings</button>
+        <button class="btn btn-danger" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+    
+    <!-- Settings View -->
+    <div class="settings-view" id="settingsView">
+      <div class="settings-header">
+        <button class="back-btn" id="backBtn">←</button>
+        <h2>Settings</h2>
+      </div>
+      
+      <div class="setting-item">
+        <label>Screenshot Interval (seconds)</label>
+        <input type="number" id="screenshotInterval" min="60" max="3600" value="300">
+      </div>
+      
+      <div class="setting-item">
+        <label>Idle Timeout (seconds)</label>
+        <input type="number" id="idleTimeout" min="60" max="1800" value="300">
+      </div>
+      
+      <div class="setting-item">
+        <label>Auto-start tracking</label>
+        <div class="toggle" id="autoStartToggle"></div>
+      </div>
+      
+      <div class="setting-item">
+        <label>Blur screenshots</label>
+        <div class="toggle" id="blurToggle"></div>
+      </div>
+      
+      <button class="btn btn-primary" id="saveSettingsBtn" style="margin-top: 20px;">Save Settings</button>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      WorkMonitor Desktop v1.0.0
+    </div>
+  </div>
+  
+  <script>
+    // DOM Elements
+    const loginForm = document.getElementById('loginForm');
+    const trackerView = document.getElementById('trackerView');
+    const settingsView = document.getElementById('settingsView');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // State
+    let isTracking = false;
+    let startTime = null;
+    let timerInterval = null;
+    let screenshotCount = 0;
+    
+    // Initialize
+    async function init() {
+      const status = await window.electronAPI.getStatus();
+      const settings = await window.electronAPI.getSettings();
+      
+      // Set API URL
+      document.getElementById('apiUrl').value = settings.apiUrl;
+      
+      if (status.user) {
+        showTrackerView();
+        updateStatus(status);
+      } else {
+        showLoginForm();
+      }
+      
+      // Load settings
+      document.getElementById('screenshotInterval').value = settings.screenshotInterval;
+      document.getElementById('idleTimeout').value = settings.idleTimeout;
+      document.getElementById('autoStartToggle').classList.toggle('active', settings.autoStart);
+      document.getElementById('blurToggle').classList.toggle('active', settings.blurScreenshots);
+      
+      setupEventListeners();
+    }
+    
+    // Event Listeners
+    function setupEventListeners() {
+      document.getElementById('loginBtn').addEventListener('click', handleLogin);
+      document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+      document.getElementById('startStopBtn').addEventListener('click', handleStartStop);
+      document.getElementById('screenshotBtn').addEventListener('click', handleScreenshot);
+      document.getElementById('settingsBtn').addEventListener('click', showSettings);
+      document.getElementById('backBtn').addEventListener('click', hideSettings);
+      document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+      
+      // Toggle buttons
+      document.getElementById('autoStartToggle').addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+      document.getElementById('blurToggle').addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+      
+      // Enter key on password
+      document.getElementById('password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleLogin();
+      });
+      
+      // Electron events
+      window.electronAPI.onTrackingStarted((data) => {
+        isTracking = true;
+        startTime = new Date();
+        updateUI();
+        startTimer();
+      });
+      
+      window.electronAPI.onTrackingStopped(() => {
+        isTracking = false;
+        stopTimer();
+        updateUI();
+      });
+      
+      window.electronAPI.onScreenshotCaptured(() => {
+        screenshotCount++;
+        document.getElementById('screenshotCount').textContent = screenshotCount;
+      });
+      
+      window.electronAPI.onIdleDetected((seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        document.getElementById('idleTime').textContent = `${minutes}m`;
+      });
+      
+      window.electronAPI.onError((message) => {
+        showError(message);
+      });
+      
+      window.electronAPI.onShowSettings(() => {
+        showSettings();
+      });
+    }
+    
+    // Login
+    async function handleLogin() {
+      const apiUrl = document.getElementById('apiUrl').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      if (!email || !password) {
+        showError('Please enter email and password');
+        return;
+      }
+      
+      // Save API URL
+      await window.electronAPI.saveSettings({ apiUrl });
+      
+      const result = await window.electronAPI.login({ email, password });
+      
+      if (result.success) {
+        document.getElementById('userName').textContent = result.user.name || result.user.email;
+        showTrackerView();
+      } else {
+        showError(result.error);
+      }
+    }
+    
+    // Logout
+    async function handleLogout() {
+      await window.electronAPI.logout();
+      showLoginForm();
+    }
+    
+    // Start/Stop Tracking
+    async function handleStartStop() {
+      if (isTracking) {
+        await window.electronAPI.stopTracking();
+      } else {
+        await window.electronAPI.startTracking();
+      }
+    }
+    
+    // Take Screenshot
+    async function handleScreenshot() {
+      await window.electronAPI.takeScreenshot();
+    }
+    
+    // Save Settings
+    async function saveSettings() {
+      const settings = {
+        screenshotInterval: parseInt(document.getElementById('screenshotInterval').value),
+        idleTimeout: parseInt(document.getElementById('idleTimeout').value),
+        autoStart: document.getElementById('autoStartToggle').classList.contains('active'),
+        blurScreenshots: document.getElementById('blurToggle').classList.contains('active')
+      };
+      
+      await window.electronAPI.saveSettings(settings);
+      hideSettings();
+    }
+    
+    // Update Status
+    function updateStatus(status) {
+      isTracking = status.isTracking;
+      if (isTracking && status.currentTimeEntry) {
+        startTimer();
+      }
+      updateUI();
+    }
+    
+    // Update UI
+    function updateUI() {
+      const indicator = document.getElementById('statusIndicator');
+      const statusText = document.getElementById('statusText');
+      const statusSubtext = document.getElementById('statusSubtext');
+      const startStopBtn = document.getElementById('startStopBtn');
+      const screenshotBtn = document.getElementById('screenshotBtn');
+      
+      if (isTracking) {
+        indicator.classList.remove('idle');
+        indicator.classList.add('tracking');
+        indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+        statusText.textContent = 'Tracking Active';
+        statusSubtext.textContent = 'Recording your activity';
+        startStopBtn.textContent = 'Stop Tracking';
+        startStopBtn.classList.remove('btn-primary');
+        startStopBtn.classList.add('btn-danger');
+        screenshotBtn.disabled = false;
+      } else {
+        indicator.classList.remove('tracking');
+        indicator.classList.add('idle');
+        indicator.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+        statusText.textContent = 'Not Tracking';
+        statusSubtext.textContent = 'Click Start to begin';
+        startStopBtn.textContent = 'Start Tracking';
+        startStopBtn.classList.remove('btn-danger');
+        startStopBtn.classList.add('btn-primary');
+        screenshotBtn.disabled = true;
+      }
+    }
+    
+    // Timer
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      startTime = new Date();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+    
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('timer').textContent = '00:00:00';
+    }
+    
+    function updateTimer() {
+      if (!startTime) return;
+      
+      const now = new Date();
+      const diff = Math.floor((now - startTime) / 1000);
+      
+      const hours = Math.floor(diff / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (diff % 60).toString().padStart(2, '0');
+      
+      document.getElementById('timer').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    // View Management
+    function showLoginForm() {
+      loginForm.classList.remove('hidden');
+      trackerView.classList.add('hidden');
+      settingsView.classList.remove('visible');
+    }
+    
+    function showTrackerView() {
+      loginForm.classList.add('hidden');
+      trackerView.classList.remove('hidden');
+      settingsView.classList.remove('visible');
+    }
+    
+    function showSettings() {
+      settingsView.classList.add('visible');
+    }
+    
+    function hideSettings() {
+      settingsView.classList.remove('visible');
+    }
+    
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('visible');
+      setTimeout(() => {
+        errorMessage.classList.remove('visible');
+      }, 5000);
+    }
+    
+    // Initialize app
+    init();
+  </script>
+</body>
+</html>
