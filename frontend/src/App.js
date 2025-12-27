@@ -61,6 +61,10 @@ function AppRouter() {
         <Route path="team" element={<Team />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="payroll" element={<Payroll />} />
+        <Route path="projects" element={<Projects />} />
+        <Route path="attendance" element={<Attendance />} />
+        <Route path="shifts" element={<Shifts />} />
+        <Route path="invoices" element={<Invoices />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
