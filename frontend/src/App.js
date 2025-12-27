@@ -20,6 +20,10 @@ import Team from "./pages/Team";
 import Leaves from "./pages/Leaves";
 import Payroll from "./pages/Payroll";
 import Settings from "./pages/Settings";
+import Projects from "./pages/Projects";
+import Attendance from "./pages/Attendance";
+import Shifts from "./pages/Shifts";
+import Invoices from "./pages/Invoices";
 
 // Router component that handles session_id detection
 function AppRouter() {
