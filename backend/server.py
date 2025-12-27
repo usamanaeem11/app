@@ -439,6 +439,9 @@ async def can_access_user_data(current_user: dict, target_user_id: str) -> bool:
 # App Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Store db in app state for route access
+    app.state.db = db
+    
     # Create indexes
     await db.users.create_index("email", unique=True)
     await db.users.create_index("user_id", unique=True)
@@ -451,6 +454,7 @@ async def lifespan(app: FastAPI):
     await db.subscriptions.create_index("company_id")
     await db.manager_assignments.create_index([("manager_id", 1), ("company_id", 1)])
     await db.disapproval_logs.create_index([("company_id", 1), ("created_at", -1)])
+    await db.payment_transactions.create_index([("company_id", 1), ("created_at", -1)])
     logger.info("Database indexes created")
     yield
     client.close()
