@@ -16,6 +16,10 @@ import jwt
 import httpx
 from contextlib import asynccontextmanager
 
+# Import route modules
+from routes.payments import router as payments_router
+from routes.ai_insights import router as ai_insights_router
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
