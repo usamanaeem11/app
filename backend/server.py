@@ -1164,6 +1164,10 @@ async def websocket_endpoint(websocket: WebSocket, company_id: str):
     except WebSocketDisconnect:
         manager.disconnect(websocket, company_id)
 
+@api_router.get("/")
+async def root():
+    return {"message": "WorkMonitor API v1.0", "status": "running"}
+
 # Include router
 app.include_router(api_router)
 
@@ -1175,7 +1179,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@api_router.get("/")
-async def root():
-    return {"message": "WorkMonitor API v1.0", "status": "running"}
