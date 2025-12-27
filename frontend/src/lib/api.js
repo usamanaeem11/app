@@ -1,0 +1,114 @@
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_BASE = `${BACKEND_URL}/api`;
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor for auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Only redirect if not on auth pages
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth APIs
+export const authAPI = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  processSession: (sessionId) => api.post('/auth/session', { session_id: sessionId }),
+  me: () => api.get('/auth/me'),
+  logout: () => api.post('/auth/logout'),
+};
+
+// Company APIs
+export const companyAPI = {
+  get: () => api.get('/company'),
+  update: (data) => api.put('/company', data),
+  invite: (data) => api.post('/company/invite', data),
+};
+
+// Team APIs
+export const teamAPI = {
+  getAll: () => api.get('/team'),
+  getMember: (userId) => api.get(`/team/${userId}`),
+  updateMember: (userId, data) => api.put(`/team/${userId}`, data),
+};
+
+// Time Entry APIs
+export const timeEntryAPI = {
+  create: (data) => api.post('/time-entries', data),
+  getAll: (params) => api.get('/time-entries', { params }),
+  getActive: () => api.get('/time-entries/active'),
+  update: (entryId, data) => api.put(`/time-entries/${entryId}`, data),
+  delete: (entryId) => api.delete(`/time-entries/${entryId}`),
+};
+
+// Screenshot APIs
+export const screenshotAPI = {
+  create: (data) => api.post('/screenshots', data),
+  getAll: (params) => api.get('/screenshots', { params }),
+};
+
+// Activity Log APIs
+export const activityAPI = {
+  create: (data) => api.post('/activity-logs', data),
+  getAll: (params) => api.get('/activity-logs', { params }),
+};
+
+// Timesheet APIs
+export const timesheetAPI = {
+  getAll: (params) => api.get('/timesheets', { params }),
+  generate: () => api.post('/timesheets/generate'),
+  approve: (timesheetId) => api.put(`/timesheets/${timesheetId}/approve`),
+  reject: (timesheetId, reason) => api.put(`/timesheets/${timesheetId}/reject`, { reason }),
+};
+
+// Leave APIs
+export const leaveAPI = {
+  create: (data) => api.post('/leaves', data),
+  getAll: (params) => api.get('/leaves', { params }),
+  approve: (leaveId) => api.put(`/leaves/${leaveId}/approve`),
+  reject: (leaveId) => api.put(`/leaves/${leaveId}/reject`),
+};
+
+// Payroll APIs
+export const payrollAPI = {
+  getAll: (params) => api.get('/payroll', { params }),
+  generate: (periodStart, periodEnd) => api.post(`/payroll/generate?period_start=${periodStart}&period_end=${periodEnd}`),
+  process: (payrollId) => api.put(`/payroll/${payrollId}/process`),
+};
+
+// Dashboard APIs
+export const dashboardAPI = {
+  getStats: () => api.get('/dashboard/stats'),
+  getTeamStatus: () => api.get('/dashboard/team-status'),
+  getActivityChart: (days) => api.get('/dashboard/activity-chart', { params: { days } }),
+};
+
+export default api;
