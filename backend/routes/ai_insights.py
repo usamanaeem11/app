@@ -174,7 +174,7 @@ Respond in JSON format with the following structure:
     "burnout_risk": "<low/medium/high with explanation>"
 }}"""
 
-        response = await llm_chat.chat(prompt)
+        response = await llm_chat.send_message(prompt)
         
         # Try to parse JSON from response
         try:
