@@ -241,6 +241,26 @@ class InviteCreate(BaseModel):
     email: EmailStr
     role: str = "employee"
 
+# ==================== SUBSCRIPTION MODELS ====================
+class SubscriptionCreate(BaseModel):
+    plan: str  # monthly, quarterly, biannual, yearly
+    num_users: int
+    payment_method: str = "card"
+
+class SubscriptionUpdate(BaseModel):
+    plan: Optional[str] = None
+    num_users: Optional[int] = None
+    status: Optional[str] = None
+
+class ManagerAssignment(BaseModel):
+    manager_id: str
+    user_ids: List[str]
+
+class DisapprovalCreate(BaseModel):
+    item_type: str  # timesheet, leave, attendance, etc.
+    item_id: str
+    reason: str
+
 # ==================== PROJECT & TASK MODELS ====================
 class ProjectCreate(BaseModel):
     name: str
