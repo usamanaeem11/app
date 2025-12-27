@@ -1,0 +1,173 @@
+<analysis>**original_problem_statement:**
+The user wants to build a comprehensive, production-ready employee time tracking and monitoring software similar to Hubstaff or Time Doctor.
+
+**PRODUCT REQUIREMENTS (MVP Confirmed by User):**
+-   **Core Features:** Time Tracking, Automatic Screenshots, and Activity Monitoring.
+-   **Included Modules:** Basic Payroll and HRMS features (Leave, Attendance, Shifts).
+-   **Tech Choices:**
+    -   **Authentication:** Standard Email/Password + Google Login.
+    -   **Real-time:** WebSockets for live dashboard updates.
+    -   **Storage:** The system should be designed to be compatible with a VPS or S3-compatible storage for screenshots.
+-   **AI Features:** Postponed for a future phase.
+-   **Subscription & Roles (Added in latest request):**
+    -   **Model:** A subscription-based SaaS with monthly, quarterly, semi-annual, and yearly plans with tiered discounts.
+    -   **Roles:**
+        -   **Admin:** The subscription owner with full control. Can manage users, assign roles, and view all data. Has access to the subscription page.
+        -   **Manager:** Can view data for assigned users, approve/disapprove timesheets with notes, but cannot edit or delete tracking data.
+        -   **User/Employee:** Can only view their own data and cannot edit tracking information like screenshots or activity logs.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The application is a full-stack web app with a FastAPI backend, React frontend, and MongoDB database.
+
+-   **Phase 1 (MVP):** Fully implemented and tested. Includes Authentication (JWT & Google), a real-time Dashboard, Time Tracking, Team Management, Leave Management, and basic Payroll. Data for screenshots and activity is currently mocked.
+-   **Phase 2 (HRMS):** Fully implemented and tested. Includes Project/Task Management, Attendance Tracking, Shift Scheduling, and Invoice Generation.
+-   **Phase 3 (Subscriptions & Roles):** Backend implementation has started. New Pydantic models and API endpoints for subscriptions and role management have been added to . The  dependency was installed.
+
+**Last working item**:
+-   **Last item agent was working:** The agent was in the middle of implementing the backend for the subscription-based model and role-based access control (RBAC). It had just added new Pydantic models and API routes to  for managing subscriptions, roles (Admin, Manager, User), and user assignments, and installed the  package.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** backend testing agent
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:** The  file has grown to over 1900 lines, making it monolithic and difficult to maintain. It contains all models, routes, and business logic.
+    -   **Next debug checklist:** This is not a bug, but a code quality issue. The file should be refactored.
+    -   **Why fix this issue and what will be achieved with the fix?** Refactoring will improve maintainability, reduce complexity, and make it easier to add new features or fix bugs in the future.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
+
+**In progress Task List**:
+-   **Task 1: Complete Subscription & Role-Based Access Control Implementation (P0)**
+    -   **Where to resume:**
+        1.  **Backend (Critical):** Update all existing data-related API endpoints (e.g., for time entries, screenshots, activity, projects) to enforce the new RBAC rules. This is the most critical missing piece. The current endpoints do not check for subscription status or user roles.
+        2.  **Backend:** Implement a middleware to check for active subscriptions on relevant routes.
+        3.  **Frontend:** Create a  page (visible to Admins only) to display pricing plans.
+        4.  **Frontend:** Implement Admin-specific UI for user management (assigning roles, assigning users to managers).
+        5.  **Frontend:** Update the UI across all pages to conditionally render data and actions based on the logged-in user's role (Admin, Manager, Employee).
+        6.  **Frontend:** Modify  to show navigation links based on user role.
+    -   **What will be achieved with this?** The application will have a fully functional subscription model and the permission structure (Admin > Manager > Employee) as specified by the user.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks (P1):**
+    -   Build the Electron desktop tracker for Windows, macOS, and Linux to enable actual background tracking and screenshot capture.
+    -   Integrate a real storage solution (like AWS S3 or compatible) for screenshots, replacing the current mock data.
+    -   Implement the idle detection algorithm in the desktop tracker.
+-   **Future Tasks (P2):**
+    -   Implement AI-driven features like productivity analysis and anomaly detection.
+    -   Develop mobile applications (Android/iOS).
+    -   Integrate a team chat feature.
+    -   Add calendar integrations (Google, Outlook).
+    -   Implement SSO (SAML, LDAP).
+
+**Completed work in this session**
+-   List of all completed tasks with file and method name:
+    -   **Authentication:** Implemented JWT and Google OAuth (, ).
+    -   **Dashboard:** Created a real-time dashboard using WebSockets ().
+    -   **Time Tracking:** Implemented time entry management and a calendar view ().
+    -   **Team Management:** Pages for viewing and managing team members ().
+    -   **HRMS Features:** Implemented Projects, Attendance, Shifts, and Leaves (, , , ).
+    -   **Finance Features:** Implemented Payroll and Invoicing (, ).
+-   **Recently completed:**
+    -   Backend foundation for Subscriptions and Roles (models and routes in ).
+
+**Earlier issues found/mentioned but not fixed**
+-   None.
+
+**Known issue recurrence from previous fork**
+-   No previous fork summary was provided.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Python, MongoDB (via ), WebSockets.
+-   **Frontend:** React, Tailwind CSS, Shadcn UI,  for API calls.
+-   **Authentication:** JWT (JSON Web Tokens) for session management, with Google OAuth support.
+-   **Architecture:** Full-stack monolithic application (single backend server, single frontend app).
+
+**key DB schema**
+-   : { , , , ,  }
+-   : { , , ,  }
+-   : { , , ,  }
+-   : { , ,  }
+-   : { , , ,  }
+-   : { , , ,  }
+-   : { , , , ,  }
+-   : { , , , ,  }
+-   : { , ,  }
+-   : { , ,  }
+-   : { , ,  }
+-   : { , Sat Dec 27 16:34:37 UTC 2025, ,  }
+-   : { , , ,  }
+-   : { , , , ,  }
+-   : { , , ,  }
+
+**changes in tech stack**
+-   None.
+
+**All files of reference**
+-   : The single most important file. Contains all backend logic, API routes, and database models. Recently modified to add subscription and role management logic.
+-   : Defines all frontend routes. Recently modified to add routes for HRMS features.
+-   : Defines the navigation. Needs to be updated for role-based visibility.
+-   : Contains all frontend-to-backend API call functions. Recently updated for HRMS features.
+-   : The product requirements document, which has been updated through the sessions.
+
+**Areas that need refactoring**:
+-   ****: This file is extremely large and violates the single-responsibility principle. It should be broken down into a more modular structure. For example:
+    -   Create a  file for all Pydantic and database models.
+    -   Create a  directory with separate files for each feature's routes (e.g., , , ).
+
+**key api endpoints**
+-   : User authentication.
+-   : User and role management.
+-   : New endpoints for managing subscriptions.
+-   : CRUD endpoints for all major features.
+-   : WebSocket endpoint for real-time dashboard updates.
+
+**Critical Info for New Agent**
+-   The user has requested a significant architectural change: a subscription model with three distinct user roles (Admin, Manager, Employee).
+-   While backend models and new API endpoints for this system have been added to , the **existing endpoints have not been secured**. You must prioritize updating all data-related endpoints to check for an active subscription and enforce role-based permissions.
+-   The  file is now a monolith and needs refactoring for better maintainability.
+-   The application relies on mocked data for tracking features (screenshots, activity). The desktop client needs to be built to provide real data.
+
+**documents and test reports created in this job**
+-   
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User (Msg 140):** Requested a major new feature: a subscription-based model with tiered pricing and three user roles (Admin, Manager, User) with specific permissions for each.
+2.  **Agent (Msg 141-160):** Acknowledged the request and began implementing the backend portion, adding new models and routes to  and installing a new dependency ().
+3.  **Agent (Msg 161-164):** Summarized the progress and prepared to hand over the session, noting the next steps required to complete the feature.
+
+There are no pending human messages. The agent's next action is to continue the implementation of the subscription and roles feature.
+
+**Project Health Check:**
+-   **Broken:** None of the existing, tested features are broken.
+-   **Mocked:** All employee monitoring data (screenshots, activity logs) is currently mocked. The desktop tracker, which would generate this data, does not exist yet. Screenshot storage (S3) is not integrated.
+
+**3rd Party Integrations**
+-   **Emergent-managed Google Auth:** Used for Login with Google functionality.
+-   **WebSockets:** Used for real-time dashboard updates.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES (after Phase 1 and Phase 2 completions).
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:**
+    -   
+    -   
+-   **Known regressions:** None.
+
+**Credentials to test flow:**
+A new test user (Admin) can be created via the  page. Other roles (Manager, Employee) must be assigned by the Admin after that feature is fully implemented.
+
+**What agent forgot to execute**
+The agent started building the subscription and RBAC system by adding new models and routes but critically forgot to **update the existing API endpoints** to actually enforce these new rules. For example, the  endpoint is still open and does not check if the user has an active subscription or the correct role to access the data. This is a major security and logic gap that must be addressed immediately.</analysis>
