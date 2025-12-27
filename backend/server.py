@@ -394,6 +394,44 @@ async def get_current_user(request: Request) -> dict:
     
     return user
 
+async def check_subscription(company_id: str) -> dict:
+    """Check if company has valid subscription"""
+    subscription = await db.subscriptions.find_one(
+        {"company_id": company_id, "status": "active"},
+        {"_id": 0}
+    )
+    if not subscription:
+        return {"valid": False, "message": "No active subscription"}
+    
+    expires_at = datetime.fromisoformat(subscription["expires_at"])
+    if expires_at < datetime.now(timezone.utc):
+        # Update status to expired
+        await db.subscriptions.update_one(
+            {"subscription_id": subscription["subscription_id"]},
+            {"$set": {"status": "expired"}}
+        )
+        return {"valid": False, "message": "Subscription expired"}
+    
+    return {"valid": True, "subscription": subscription}
+
+async def get_users_for_manager(manager_id: str, company_id: str) -> List[str]:
+    """Get list of user IDs assigned to a manager"""
+    assignment = await db.manager_assignments.find_one(
+        {"manager_id": manager_id, "company_id": company_id},
+        {"_id": 0}
+    )
+    return assignment.get("user_ids", []) if assignment else []
+
+async def can_access_user_data(current_user: dict, target_user_id: str) -> bool:
+    """Check if current user can access target user's data"""
+    if current_user["role"] == "admin":
+        return True
+    if current_user["role"] == "manager":
+        assigned_users = await get_users_for_manager(current_user["user_id"], current_user["company_id"])
+        return target_user_id in assigned_users
+    # Employee can only access own data
+    return current_user["user_id"] == target_user_id
+
 # App Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -406,6 +444,9 @@ async def lifespan(app: FastAPI):
     await db.screenshots.create_index([("user_id", 1), ("taken_at", -1)])
     await db.activity_logs.create_index([("user_id", 1), ("timestamp", -1)])
     await db.user_sessions.create_index("session_token", unique=True)
+    await db.subscriptions.create_index("company_id")
+    await db.manager_assignments.create_index([("manager_id", 1), ("company_id", 1)])
+    await db.disapproval_logs.create_index([("company_id", 1), ("created_at", -1)])
     logger.info("Database indexes created")
     yield
     client.close()
