@@ -2461,6 +2461,11 @@ async def activate_subscription_after_payment(
 # Include sub-routers into api_router first
 api_router.include_router(payments_router)
 api_router.include_router(ai_insights_router)
+api_router.include_router(storage_router)
+api_router.include_router(email_router)
+api_router.include_router(pdf_router)
+api_router.include_router(calendar_router)
+api_router.include_router(sso_router)
 
 # Then include api_router into app
 app.include_router(api_router)
