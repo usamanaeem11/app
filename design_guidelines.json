@@ -1,0 +1,152 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "The Anti-AI Designer",
+    "mission": "Create a top 1% 'Control Room' aesthetic for employee monitoring that feels like a high-end flight deck, not a surveillance tool.",
+    "principles": [
+      "Fusion over Imitation: Mix 'Linear' minimalism with 'Sci-Fi' HUD density.",
+      "Emotion First: Trust and Clarity. The UI should feel precise and unopinionated.",
+      "Content is King: Data is the hero. Charts and timelines take precedence.",
+      "Zoom In: High density, low noise. Use negative space to separate logical groups, not just for decoration.",
+      "Contrast: High contrast for readability in dark mode. 1px borders are your best friend."
+    ]
+  },
+  "typography": {
+    "primary_font": "Manrope",
+    "secondary_font": "JetBrains Mono",
+    "body_font": "Inter",
+    "usage": {
+      "headings": "Manrope (Weights: 600, 800). Tight tracking (-0.02em).",
+      "body": "Inter (Weights: 400, 500). Normal tracking.",
+      "data_display": "JetBrains Mono (Weights: 400, 500). Use for timestamps, IDs, and tabular data.",
+      "labels": "Inter (Weight: 600). Uppercase, tracking-wide (0.05em), text-xs."
+    }
+  },
+  "colors": {
+    "theme": "dark",
+    "palette": {
+      "background": "#09090B",
+      "surface": "#18181B",
+      "surface_highlight": "#27272A",
+      "border": "#27272A",
+      "primary": "#FAFAFA",
+      "primary_foreground": "#18181B",
+      "secondary": "#27272A",
+      "secondary_foreground": "#FAFAFA",
+      "muted": "#71717A",
+      "accent_active": "#10B981",
+      "accent_idle": "#F59E0B",
+      "accent_offline": "#EF4444",
+      "accent_info": "#3B82F6"
+    },
+    "gradients": {
+      "tracing_beam": "linear-gradient(90deg, transparent, #FAFAFA, transparent)",
+      "glass_surface": "linear-gradient(180deg, rgba(24, 24, 27, 0.6) 0%, rgba(24, 24, 27, 0.8) 100%)"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid #27272A (Zinc 800). Use 'Grid Borders' strategy for dashboards.",
+    "shadows": "shadow-sm for cards, shadow-xl for floating elements (modals, dropdowns).",
+    "radius": "rounded-md (6px) or rounded-sm (4px). Avoid large rounded corners to maintain a 'technical' feel.",
+    "glassmorphism": "backdrop-blur-xl bg-black/40 border border-white/10 for sticky headers and overlays.",
+    "textures": "Subtle noise overlay (opacity 0.02) on the main background to prevent banding."
+  },
+  "grids": {
+    "dashboard_layout": "Mode B: The 'Control Room' Grid. Dense, data-heavy. Gap-4.",
+    "marketing_layout": "Mode A: The 'Tetris' Grid. Asymmetrical, wide gaps (Gap-12)."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 rounded-md font-medium transition-colors",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 rounded-md font-medium transition-colors",
+      "ghost": "hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md transition-colors",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md transition-colors"
+    },
+    "cards": {
+      "default": "bg-card text-card-foreground rounded-lg border shadow-sm",
+      "interactive": "hover:border-primary/50 transition-colors cursor-pointer"
+    },
+    "inputs": {
+      "default": "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "image_urls": {
+    "avatars": [
+      {
+        "url": "https://images.pexels.com/photos/35324135/pexels-photo-35324135.jpeg",
+        "description": "Professional headshot, male, glasses",
+        "category": "avatar"
+      },
+      {
+        "url": "https://images.pexels.com/photos/35306506/pexels-photo-35306506.jpeg",
+        "description": "Professional headshot, female, confident",
+        "category": "avatar"
+      }
+    ],
+    "logos": [
+      {
+        "url": "https://images.unsplash.com/photo-1734349803289-d1af597fd3aa?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzY2Nzg2NzM5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract minimalist shape, good for placeholder logo",
+        "category": "logo"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1759724369762-376e0a29478b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwzfHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzY2Nzg2NzM5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Geometric pattern, use for branding elements",
+        "category": "branding"
+      }
+    ],
+    "backgrounds": [
+      {
+        "url": "https://images.pexels.com/photos/11167645/pexels-photo-11167645.jpeg",
+        "description": "Dark abstract tech background, subtle gradients",
+        "category": "login_bg"
+      },
+      {
+        "url": "https://images.pexels.com/photos/2092075/pexels-photo-2092075.jpeg",
+        "description": "Dark geometric shapes, clean",
+        "category": "hero_bg"
+      }
+    ]
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover_effects": "scale-[1.01] active:scale-[0.99]",
+    "loading": "animate-pulse bg-muted rounded"
+  },
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 ratio for normal text. Use lighter grays (Zinc 300/400) for secondary text, never dark gray on black.",
+    "focus_states": "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "reduced_motion": "Respect prefers-reduced-motion media query."
+  },
+  "instructions_to_main_agent": [
+    "Implement the 'Control Room' aesthetic: Dark mode by default, high density, 1px borders.",
+    "Use 'Manrope' for all headings and 'JetBrains Mono' for any data/numbers/timestamps.",
+    "For the Dashboard, use the 'Bento Grid Mode B' layout strategy.",
+    "Use the provided image URLs for avatars and backgrounds. Do not use placeholders.",
+    "Ensure all interactive elements have 'data-testid' attributes.",
+    "Do not use 'Inter' for headings. Use it only for body text.",
+    "Use 'sonner' for toast notifications.",
+    "Customize Shadcn components to match the 'Zinc' dark theme defined in colors.",
+    "For charts, use Recharts with the defined chart colors (Emerald, Amber, Red, Blue)."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add '.App { text-align: center; }' in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Create new components that match the style and conventions of existing components when needed.",
+    "Examine existing components to understand the project's component patterns before creating new ones.",
+    "Components MUST use named exports (export const ComponentName = ...).",
+    "Pages MUST use default exports (export default function PageName() {...}).",
+    "Use 'sonner' for toasts. Sonner component are located in '/app/src/components/ui/sonner.tsx'."
+  ]
+}
