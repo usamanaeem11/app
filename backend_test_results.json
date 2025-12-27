@@ -1,0 +1,93 @@
+{
+  "total_tests": 14,
+  "passed_tests": 1,
+  "failed_tests": 13,
+  "success_rate": 7.1,
+  "results": [
+    {
+      "test": "API Health Check",
+      "success": true,
+      "details": "API is running: WorkMonitor API v1.0",
+      "timestamp": "2025-12-27T13:00:47.060379"
+    },
+    {
+      "test": "User Registration",
+      "success": false,
+      "details": "Registration failed",
+      "timestamp": "2025-12-27T13:00:47.125332",
+      "response": "{'detail': [{'type': 'value_error', 'loc': ['body', 'email'], 'msg': 'value is not a valid email address: The part after the @-sign is a special-use or reserved name that cannot be used with email.', 'input': 'testuser_130047@workmonitor.test', 'ctx': {'reason': 'The part after the @-sign is a special-use or reserved name that cannot be used with email.'}}]}"
+    },
+    {
+      "test": "User Login",
+      "success": false,
+      "details": "No user data available for login test",
+      "timestamp": "2025-12-27T13:00:47.125372"
+    },
+    {
+      "test": "Auth Me",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125378"
+    },
+    {
+      "test": "Dashboard Stats",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125382"
+    },
+    {
+      "test": "Time Entry Creation",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125386"
+    },
+    {
+      "test": "Time Entries Retrieval",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125389"
+    },
+    {
+      "test": "Active Time Entry",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125396"
+    },
+    {
+      "test": "Timesheet Generation",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125400"
+    },
+    {
+      "test": "Leave Request Creation",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125403"
+    },
+    {
+      "test": "Leave Requests Retrieval",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125406"
+    },
+    {
+      "test": "Team Members Listing",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125410"
+    },
+    {
+      "test": "Company Settings Retrieval",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125413"
+    },
+    {
+      "test": "Timesheets Retrieval",
+      "success": false,
+      "details": "No token available",
+      "timestamp": "2025-12-27T13:00:47.125416"
+    }
+  ]
+}
