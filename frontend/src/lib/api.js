@@ -111,4 +111,52 @@ export const dashboardAPI = {
   getActivityChart: (days) => api.get('/dashboard/activity-chart', { params: { days } }),
 };
 
+// Project APIs
+export const projectAPI = {
+  create: (data) => api.post('/projects', data),
+  getAll: (params) => api.get('/projects', { params }),
+  get: (projectId) => api.get(`/projects/${projectId}`),
+  update: (projectId, data) => api.put(`/projects/${projectId}`, data),
+  delete: (projectId) => api.delete(`/projects/${projectId}`),
+};
+
+// Task APIs
+export const taskAPI = {
+  create: (data) => api.post('/tasks', data),
+  getAll: (params) => api.get('/tasks', { params }),
+  get: (taskId) => api.get(`/tasks/${taskId}`),
+  update: (taskId, data) => api.put(`/tasks/${taskId}`, data),
+  delete: (taskId) => api.delete(`/tasks/${taskId}`),
+};
+
+// Shift APIs
+export const shiftAPI = {
+  create: (data) => api.post('/shifts', data),
+  getAll: () => api.get('/shifts'),
+  update: (shiftId, data) => api.put(`/shifts/${shiftId}`, data),
+  delete: (shiftId) => api.delete(`/shifts/${shiftId}`),
+  createAssignment: (data) => api.post('/shift-assignments', data),
+  getAssignments: (params) => api.get('/shift-assignments', { params }),
+};
+
+// Attendance APIs
+export const attendanceAPI = {
+  clockIn: () => api.post('/attendance/clock-in'),
+  clockOut: () => api.post('/attendance/clock-out'),
+  getAll: (params) => api.get('/attendance', { params }),
+  getToday: () => api.get('/attendance/today'),
+  getReport: (startDate, endDate) => api.get('/attendance/report', { params: { start_date: startDate, end_date: endDate } }),
+};
+
+// Invoice APIs
+export const invoiceAPI = {
+  create: (data) => api.post('/invoices', data),
+  getAll: (params) => api.get('/invoices', { params }),
+  get: (invoiceId) => api.get(`/invoices/${invoiceId}`),
+  update: (invoiceId, data) => api.put(`/invoices/${invoiceId}`, data),
+  delete: (invoiceId) => api.delete(`/invoices/${invoiceId}`),
+  generateFromProject: (invoiceId, projectId, startDate, endDate) => 
+    api.post(`/invoices/${invoiceId}/generate-from-project?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`),
+};
+
 export default api;
