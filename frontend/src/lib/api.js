@@ -159,4 +159,38 @@ export const invoiceAPI = {
     api.post(`/invoices/${invoiceId}/generate-from-project?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`),
 };
 
+// Subscription APIs
+export const subscriptionAPI = {
+  getPlans: () => api.get('/subscription/plans'),
+  get: () => api.get('/subscription'),
+  create: (data) => api.post('/subscription', data),
+  update: (data) => api.put('/subscription', data),
+  getHistory: () => api.get('/subscription/history'),
+  activate: (sessionId) => api.post(`/subscription/activate?session_id=${sessionId}`),
+};
+
+// Payment APIs
+export const paymentAPI = {
+  createCheckoutSession: (data) => api.post('/payments/checkout/session', data),
+  getCheckoutStatus: (sessionId) => api.post('/payments/checkout/status', { session_id: sessionId }),
+};
+
+// User Management APIs
+export const userManagementAPI = {
+  updateRole: (userId, role) => api.put(`/users/${userId}/role?role=${role}`),
+  getManagers: () => api.get('/managers'),
+  assignUsersToManager: (managerId, userIds) => api.post(`/managers/${managerId}/assign-users`, { manager_id: managerId, user_ids: userIds }),
+  getManagerUsers: (managerId) => api.get(`/managers/${managerId}/users`),
+  getMyUsers: () => api.get('/team/my-users'),
+  getDisapprovalLogs: (params) => api.get('/disapproval-logs', { params }),
+  createDisapproval: (data) => api.post('/disapprove', data),
+};
+
+// AI Insights APIs
+export const aiInsightsAPI = {
+  analyzeProductivity: (data) => api.post('/ai/analyze-productivity', data),
+  getProductivityTrends: (params) => api.get('/ai/productivity-trends', { params }),
+  getAppUsageBreakdown: (params) => api.get('/ai/app-usage-breakdown', { params }),
+};
+
 export default api;
