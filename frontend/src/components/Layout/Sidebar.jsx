@@ -13,18 +13,26 @@ import {
   LogOut,
   Activity,
   ChevronRight,
+  FolderKanban,
+  CalendarCheck,
+  CalendarClock,
+  Receipt,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/time-tracking', label: 'Time Tracking', icon: Clock, roles: ['admin', 'manager', 'employee', 'hr'] },
+  { path: '/projects', label: 'Projects', icon: FolderKanban, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/screenshots', label: 'Screenshots', icon: Camera, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/activity', label: 'Activity', icon: Activity, roles: ['admin', 'manager', 'employee', 'hr'] },
+  { path: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/timesheets', label: 'Timesheets', icon: FileText, roles: ['admin', 'manager', 'employee', 'hr'] },
+  { path: '/shifts', label: 'Shifts', icon: CalendarClock, roles: ['admin', 'manager', 'hr'] },
   { path: '/team', label: 'Team', icon: Users, roles: ['admin', 'manager', 'hr'] },
   { path: '/leaves', label: 'Leaves', icon: Calendar, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/payroll', label: 'Payroll', icon: DollarSign, roles: ['admin', 'hr'] },
+  { path: '/invoices', label: 'Invoices', icon: Receipt, roles: ['admin', 'hr'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'hr'] },
 ];
 
