@@ -88,7 +88,7 @@ class WorkMonitorAPITester:
         """Test user registration with company creation"""
         timestamp = datetime.now().strftime("%H%M%S")
         test_data = {
-            "email": f"testuser_{timestamp}@workmonitor.test",
+            "email": f"testuser_{timestamp}@example.com",
             "password": "TestPass123!",
             "name": f"Test User {timestamp}",
             "company_name": f"Test Company {timestamp}"
