@@ -2453,10 +2453,12 @@ async def activate_subscription_after_payment(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to activate subscription: {str(e)}")
 
-# Include routers
-app.include_router(api_router)
+# Include sub-routers into api_router first
 api_router.include_router(payments_router)
 api_router.include_router(ai_insights_router)
+
+# Then include api_router into app
+app.include_router(api_router)
 
 # CORS
 app.add_middleware(
