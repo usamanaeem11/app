@@ -629,8 +629,9 @@ class WorkMonitorAPITester:
         print(f"📍 Testing API at: {self.api_base}")
         print("=" * 80)
 
-        # Test sequence
+        # Test sequence - MVP tests first, then new features
         tests = [
+            # MVP Tests
             self.test_api_health,
             self.test_user_registration,
             self.test_user_login,
@@ -645,6 +646,13 @@ class WorkMonitorAPITester:
             self.test_team_members_listing,
             self.test_company_settings_retrieval,
             self.test_timesheets_retrieval,
+            # New Features Tests
+            self.test_projects_crud,
+            self.test_tasks_crud,
+            self.test_attendance_clock_operations,
+            self.test_shifts_crud,
+            self.test_shift_assignments,
+            self.test_invoices_crud,
         ]
 
         for test in tests:
