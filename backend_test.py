@@ -330,6 +330,299 @@ class WorkMonitorAPITester:
             self.log_test("Timesheets Retrieval", False, f"Failed to retrieve timesheets", response)
             return False
 
+    # ==================== NEW FEATURES TESTING ====================
+    
+    def test_projects_crud(self):
+        """Test Projects CRUD operations"""
+        if not self.token:
+            self.log_test("Projects CRUD", False, "No token available")
+            return False
+
+        # Create project
+        project_data = {
+            "name": "Test Project",
+            "description": "A test project for API testing",
+            "client_name": "Test Client",
+            "budget_hours": 100.0,
+            "hourly_rate": 50.0,
+            "color": "#3B82F6"
+        }
+
+        success, response = self.make_request('POST', '/projects', project_data, 200)
+        if not success or 'project_id' not in response:
+            self.log_test("Projects CRUD - Create", False, f"Failed to create project", response)
+            return False
+        
+        project_id = response['project_id']
+        self.log_test("Projects CRUD - Create", True, f"Project created: {project_id}")
+
+        # Get all projects
+        success, response = self.make_request('GET', '/projects')
+        if not success or not isinstance(response, list):
+            self.log_test("Projects CRUD - List", False, f"Failed to get projects", response)
+            return False
+        
+        self.log_test("Projects CRUD - List", True, f"Retrieved {len(response)} projects")
+
+        # Get specific project
+        success, response = self.make_request('GET', f'/projects/{project_id}')
+        if not success or 'project_id' not in response:
+            self.log_test("Projects CRUD - Get", False, f"Failed to get project", response)
+            return False
+        
+        self.log_test("Projects CRUD - Get", True, f"Retrieved project: {response['name']}")
+
+        # Update project
+        update_data = {"status": "completed"}
+        success, response = self.make_request('PUT', f'/projects/{project_id}', update_data)
+        if not success:
+            self.log_test("Projects CRUD - Update", False, f"Failed to update project", response)
+            return False
+        
+        self.log_test("Projects CRUD - Update", True, "Project updated successfully")
+
+        # Store project_id for tasks test
+        self.project_id = project_id
+        return True
+
+    def test_tasks_crud(self):
+        """Test Tasks CRUD operations"""
+        if not self.token:
+            self.log_test("Tasks CRUD", False, "No token available")
+            return False
+
+        if not hasattr(self, 'project_id'):
+            self.log_test("Tasks CRUD", False, "No project_id available from projects test")
+            return False
+
+        # Create task
+        task_data = {
+            "project_id": self.project_id,
+            "name": "Test Task",
+            "description": "A test task for API testing",
+            "priority": "high",
+            "estimated_hours": 8.0,
+            "status": "todo"
+        }
+
+        success, response = self.make_request('POST', '/tasks', task_data, 200)
+        if not success or 'task_id' not in response:
+            self.log_test("Tasks CRUD - Create", False, f"Failed to create task", response)
+            return False
+        
+        task_id = response['task_id']
+        self.log_test("Tasks CRUD - Create", True, f"Task created: {task_id}")
+
+        # Get all tasks
+        success, response = self.make_request('GET', '/tasks')
+        if not success or not isinstance(response, list):
+            self.log_test("Tasks CRUD - List", False, f"Failed to get tasks", response)
+            return False
+        
+        self.log_test("Tasks CRUD - List", True, f"Retrieved {len(response)} tasks")
+
+        # Get specific task
+        success, response = self.make_request('GET', f'/tasks/{task_id}')
+        if not success or 'task_id' not in response:
+            self.log_test("Tasks CRUD - Get", False, f"Failed to get task", response)
+            return False
+        
+        self.log_test("Tasks CRUD - Get", True, f"Retrieved task: {response['name']}")
+
+        # Update task
+        update_data = {"status": "in_progress"}
+        success, response = self.make_request('PUT', f'/tasks/{task_id}', update_data)
+        if not success:
+            self.log_test("Tasks CRUD - Update", False, f"Failed to update task", response)
+            return False
+        
+        self.log_test("Tasks CRUD - Update", True, "Task updated successfully")
+
+        return True
+
+    def test_attendance_clock_operations(self):
+        """Test Attendance clock in/out operations"""
+        if not self.token:
+            self.log_test("Attendance Clock Operations", False, "No token available")
+            return False
+
+        # Get today's attendance first
+        success, response = self.make_request('GET', '/attendance/today')
+        if success:
+            self.log_test("Attendance - Get Today", True, f"Today's attendance status: {response.get('status', 'not_clocked_in')}")
+        
+        # Clock in
+        success, response = self.make_request('POST', '/attendance/clock-in', {}, 200)
+        if not success:
+            # Check if already clocked in
+            if 'already clocked in' in str(response).lower():
+                self.log_test("Attendance - Clock In", True, "Already clocked in (expected)")
+            else:
+                self.log_test("Attendance - Clock In", False, f"Failed to clock in", response)
+                return False
+        else:
+            self.log_test("Attendance - Clock In", True, f"Clocked in successfully")
+
+        # Get attendance records
+        success, response = self.make_request('GET', '/attendance')
+        if not success or not isinstance(response, list):
+            self.log_test("Attendance - Get Records", False, f"Failed to get attendance records", response)
+            return False
+        
+        self.log_test("Attendance - Get Records", True, f"Retrieved {len(response)} attendance records")
+
+        # Try to clock out (might fail if not enough time has passed, which is OK)
+        success, response = self.make_request('POST', '/attendance/clock-out', {}, 200)
+        if success:
+            self.log_test("Attendance - Clock Out", True, f"Clocked out successfully")
+        else:
+            # Check if not clocked in or already clocked out
+            if 'not clocked in' in str(response).lower() or 'already clocked out' in str(response).lower():
+                self.log_test("Attendance - Clock Out", True, "Clock out not applicable (expected)")
+            else:
+                self.log_test("Attendance - Clock Out", False, f"Failed to clock out", response)
+                return False
+
+        return True
+
+    def test_shifts_crud(self):
+        """Test Shifts CRUD operations"""
+        if not self.token:
+            self.log_test("Shifts CRUD", False, "No token available")
+            return False
+
+        # Create shift
+        shift_data = {
+            "name": "Morning Shift",
+            "start_time": "09:00",
+            "end_time": "17:00",
+            "days": [0, 1, 2, 3, 4],  # Monday to Friday
+            "break_duration": 60,
+            "color": "#10B981"
+        }
+
+        success, response = self.make_request('POST', '/shifts', shift_data, 200)
+        if not success or 'shift_id' not in response:
+            self.log_test("Shifts CRUD - Create", False, f"Failed to create shift", response)
+            return False
+        
+        shift_id = response['shift_id']
+        self.log_test("Shifts CRUD - Create", True, f"Shift created: {shift_id}")
+
+        # Get all shifts
+        success, response = self.make_request('GET', '/shifts')
+        if not success or not isinstance(response, list):
+            self.log_test("Shifts CRUD - List", False, f"Failed to get shifts", response)
+            return False
+        
+        self.log_test("Shifts CRUD - List", True, f"Retrieved {len(response)} shifts")
+
+        # Update shift
+        update_data = {"break_duration": 90}
+        success, response = self.make_request('PUT', f'/shifts/{shift_id}', update_data)
+        if not success:
+            self.log_test("Shifts CRUD - Update", False, f"Failed to update shift", response)
+            return False
+        
+        self.log_test("Shifts CRUD - Update", True, "Shift updated successfully")
+
+        # Store shift_id for assignments test
+        self.shift_id = shift_id
+        return True
+
+    def test_shift_assignments(self):
+        """Test Shift assignments operations"""
+        if not self.token:
+            self.log_test("Shift Assignments", False, "No token available")
+            return False
+
+        if not hasattr(self, 'shift_id') or not hasattr(self, 'user_data'):
+            self.log_test("Shift Assignments", False, "No shift_id or user_data available")
+            return False
+
+        # Create shift assignment
+        assignment_data = {
+            "user_id": self.user_data['user_id'],
+            "shift_id": self.shift_id,
+            "date": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
+            "notes": "Test assignment"
+        }
+
+        success, response = self.make_request('POST', '/shift-assignments', assignment_data, 200)
+        if not success or 'assignment_id' not in response:
+            self.log_test("Shift Assignments - Create", False, f"Failed to create assignment", response)
+            return False
+        
+        assignment_id = response['assignment_id']
+        self.log_test("Shift Assignments - Create", True, f"Assignment created: {assignment_id}")
+
+        # Get all assignments
+        success, response = self.make_request('GET', '/shift-assignments')
+        if not success or not isinstance(response, list):
+            self.log_test("Shift Assignments - List", False, f"Failed to get assignments", response)
+            return False
+        
+        self.log_test("Shift Assignments - List", True, f"Retrieved {len(response)} assignments")
+
+        return True
+
+    def test_invoices_crud(self):
+        """Test Invoices CRUD operations"""
+        if not self.token:
+            self.log_test("Invoices CRUD", False, "No token available")
+            return False
+
+        # Create invoice
+        invoice_data = {
+            "client_name": "Test Client Corp",
+            "items": [
+                {
+                    "description": "Development work",
+                    "hours": 10,
+                    "rate": 100,
+                    "amount": 1000
+                }
+            ],
+            "due_date": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+            "notes": "Test invoice for API testing",
+            "tax_rate": 10
+        }
+
+        success, response = self.make_request('POST', '/invoices', invoice_data, 200)
+        if not success or 'invoice_id' not in response:
+            self.log_test("Invoices CRUD - Create", False, f"Failed to create invoice", response)
+            return False
+        
+        invoice_id = response['invoice_id']
+        self.log_test("Invoices CRUD - Create", True, f"Invoice created: {invoice_id}")
+
+        # Get all invoices
+        success, response = self.make_request('GET', '/invoices')
+        if not success or not isinstance(response, list):
+            self.log_test("Invoices CRUD - List", False, f"Failed to get invoices", response)
+            return False
+        
+        self.log_test("Invoices CRUD - List", True, f"Retrieved {len(response)} invoices")
+
+        # Get specific invoice
+        success, response = self.make_request('GET', f'/invoices/{invoice_id}')
+        if not success or 'invoice_id' not in response:
+            self.log_test("Invoices CRUD - Get", False, f"Failed to get invoice", response)
+            return False
+        
+        self.log_test("Invoices CRUD - Get", True, f"Retrieved invoice: {response['invoice_number']}")
+
+        # Update invoice status
+        update_data = {"status": "sent"}
+        success, response = self.make_request('PUT', f'/invoices/{invoice_id}', update_data)
+        if not success:
+            self.log_test("Invoices CRUD - Update", False, f"Failed to update invoice", response)
+            return False
+        
+        self.log_test("Invoices CRUD - Update", True, "Invoice updated successfully")
+
+        return True
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("🚀 Starting Employee Time Tracking & Monitoring Software Backend Tests")
