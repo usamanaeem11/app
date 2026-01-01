@@ -24,6 +24,11 @@ from routes.email import router as email_router
 from routes.pdf_generator import router as pdf_router
 from routes.google_calendar import router as calendar_router
 from routes.sso import router as sso_router
+from routes.pricing import router as pricing_router
+from routes.payment_methods import router as payment_methods_router
+from routes.team_chat import router as chat_router
+from routes.custom_reports import router as reports_router
+from routes.outlook_calendar import router as outlook_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
