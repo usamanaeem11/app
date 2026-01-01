@@ -36,14 +36,7 @@ const Checkout = () => {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
   const [autoRecurring, setAutoRecurring] = useState(true);
-  
-  // Card form state
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
-  const [cardName, setCardName] = useState('');
 
   useEffect(() => {
     fetchPlanDetails();
