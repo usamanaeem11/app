@@ -1640,7 +1640,15 @@ async def get_shift_assignments(
 
 # ==================== ATTENDANCE ROUTES ====================
 @api_router.post("/attendance/clock-in")
-async def clock_in(user: dict = Depends(get_current_user)):
+async def clock_in(request: Request, user: dict = Depends(get_current_user)):
+    # Feature gate check for attendance
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "attendance_management")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "attendance_management", "required_plan": "Pro", "message": "Attendance management requires the Pro plan or higher."}
+        )
+    
     today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Check if already clocked in
