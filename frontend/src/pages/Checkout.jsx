@@ -251,127 +251,34 @@ const Checkout = () => {
           <div>
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardHeader>
-                <CardTitle className="text-zinc-100">Payment Method</CardTitle>
+                <CardTitle className="text-zinc-100 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Payment
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Payment Method Selection */}
-                  <RadioGroup 
-                    value={paymentMethod} 
-                    onValueChange={setPaymentMethod}
-                    className="grid grid-cols-2 gap-3"
-                  >
-                    <Label
-                      htmlFor="card"
-                      className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'card' 
-                          ? 'border-emerald-500 bg-emerald-500/10' 
-                          : 'border-zinc-700 hover:border-zinc-600'
-                      }`}
-                    >
-                      <RadioGroupItem value="card" id="card" className="sr-only" />
-                      <CreditCard className="w-5 h-5 text-zinc-400" />
-                      <span className="text-sm text-zinc-100">Card</span>
-                    </Label>
-                    
-                    <Label
-                      htmlFor="paypal"
-                      className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'paypal' 
-                          ? 'border-emerald-500 bg-emerald-500/10' 
-                          : 'border-zinc-700 hover:border-zinc-600'
-                      }`}
-                    >
-                      <RadioGroupItem value="paypal" id="paypal" className="sr-only" />
-                      <Wallet className="w-5 h-5 text-zinc-400" />
-                      <span className="text-sm text-zinc-100">PayPal</span>
-                    </Label>
-                    
-                    <Label
-                      htmlFor="payoneer"
-                      className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'payoneer' 
-                          ? 'border-emerald-500 bg-emerald-500/10' 
-                          : 'border-zinc-700 hover:border-zinc-600'
-                      }`}
-                    >
-                      <RadioGroupItem value="payoneer" id="payoneer" className="sr-only" />
-                      <Building2 className="w-5 h-5 text-zinc-400" />
-                      <span className="text-sm text-zinc-100">Payoneer</span>
-                    </Label>
-                    
-                    <Label
-                      htmlFor="wise"
-                      className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                        paymentMethod === 'wise' 
-                          ? 'border-emerald-500 bg-emerald-500/10' 
-                          : 'border-zinc-700 hover:border-zinc-600'
-                      }`}
-                    >
-                      <RadioGroupItem value="wise" id="wise" className="sr-only" />
-                      <Building2 className="w-5 h-5 text-zinc-400" />
-                      <span className="text-sm text-zinc-100">Wise</span>
-                    </Label>
-                  </RadioGroup>
-
-                  {/* Card Form (only show for card payment) */}
-                  {paymentMethod === 'card' && (
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-zinc-400">Card number</Label>
-                        <Input
-                          placeholder="1234 5678 9012 3456"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                          maxLength={19}
-                          className="mt-1.5 bg-zinc-800 border-zinc-700 text-zinc-100"
-                        />
+                  {/* Stripe Payment Info */}
+                  <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-emerald-500/10 rounded-lg">
+                        <Lock className="w-5 h-5 text-emerald-400" />
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-zinc-400">Expiry date</Label>
-                          <Input
-                            placeholder="MM/YY"
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                            maxLength={5}
-                            className="mt-1.5 bg-zinc-800 border-zinc-700 text-zinc-100"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-zinc-400">CVC</Label>
-                          <Input
-                            placeholder="123"
-                            value={cardCvc}
-                            onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                            maxLength={4}
-                            className="mt-1.5 bg-zinc-800 border-zinc-700 text-zinc-100"
-                          />
-                        </div>
-                      </div>
-
                       <div>
-                        <Label className="text-zinc-400">Cardholder name</Label>
-                        <Input
-                          placeholder="John Doe"
-                          value={cardName}
-                          onChange={(e) => setCardName(e.target.value)}
-                          className="mt-1.5 bg-zinc-800 border-zinc-700 text-zinc-100"
-                        />
+                        <p className="text-sm font-medium text-zinc-100">Secure Card Payment</p>
+                        <p className="text-xs text-zinc-400">Powered by Stripe</p>
                       </div>
                     </div>
-                  )}
-
-                  {/* Alternative Payment Instructions */}
-                  {paymentMethod !== 'card' && (
-                    <div className="bg-zinc-800/50 rounded-lg p-4">
-                      <p className="text-sm text-zinc-400">
-                        After clicking "Complete Purchase", you'll receive instructions to complete your {paymentMethod} payment. 
-                        Your subscription will be activated once payment is confirmed.
-                      </p>
+                    <p className="text-sm text-zinc-400">
+                      You'll be redirected to Stripe's secure checkout page to complete your payment. 
+                      We accept Visa, Mastercard, American Express, and other major cards.
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png" alt="Visa" className="h-6 opacity-70" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png" alt="Mastercard" className="h-6 opacity-70" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/American_Express_logo_%282018%29.svg/100px-American_Express_logo_%282018%29.svg.png" alt="Amex" className="h-6 opacity-70" />
                     </div>
-                  )}
+                  </div>
 
                   {/* Auto-recurring option */}
                   <div className="flex items-center space-x-2">
