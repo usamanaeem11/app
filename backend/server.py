@@ -1125,10 +1125,19 @@ async def reject_leave(leave_id: str, user: dict = Depends(get_current_user)):
 # ==================== PAYROLL ROUTES ====================
 @api_router.get("/payroll")
 async def get_payroll(
+    request: Request,
     period: Optional[str] = None,
     user_id: Optional[str] = None,
     user: dict = Depends(get_current_user)
 ):
+    # Feature gate check for payroll
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "payroll")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "payroll", "required_plan": "Pro", "message": "Payroll requires the Pro plan or higher. Upgrade to access payroll features."}
+        )
+    
     query = {"company_id": user["company_id"]}
     
     if user["role"] == "employee":
@@ -1144,12 +1153,21 @@ async def get_payroll(
 
 @api_router.post("/payroll/generate")
 async def generate_payroll(
+    request: Request,
     period_start: str,
     period_end: str,
     user: dict = Depends(get_current_user)
 ):
     if user["role"] not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Feature gate check for payroll
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "payroll")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "payroll", "required_plan": "Pro", "message": "Payroll requires the Pro plan or higher."}
+        )
     
     # Get all approved timesheets in period
     timesheets = await db.timesheets.find({
