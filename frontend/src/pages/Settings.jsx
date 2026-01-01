@@ -451,6 +451,170 @@ export default function Settings() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Integrations Settings */}
+        <TabsContent value="integrations" className="mt-6 space-y-6">
+          {/* Google Calendar */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Calendar className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-zinc-100 text-base">Google Calendar</CardTitle>
+                    <CardDescription>Sync time entries with your calendar</CardDescription>
+                  </div>
+                </div>
+                {integrations.calendar.connected ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Connected
+                  </Badge>
+                ) : (
+                  <Badge className="bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+                    <XCircle className="w-3 h-3 mr-1" /> Not Connected
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {integrations.calendar.connected ? (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-zinc-400">
+                    Connected as: {integrations.calendar.google_email}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={handleDisconnectCalendar}>
+                    Disconnect
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={handleConnectCalendar} className="bg-blue-600 hover:bg-blue-700">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Connect Google Calendar
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Email Configuration */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Mail className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-zinc-100 text-base">Email Notifications</CardTitle>
+                    <CardDescription>SMTP configuration for sending emails</CardDescription>
+                  </div>
+                </div>
+                {integrations.email.configured ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Configured
+                  </Badge>
+                ) : (
+                  <Badge className="bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+                    <XCircle className="w-3 h-3 mr-1" /> Not Configured
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {integrations.email.configured ? (
+                <div className="space-y-2 text-sm text-zinc-400">
+                  <p>SMTP Host: {integrations.email.host}</p>
+                  <p>From Email: {integrations.email.from_email}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500">
+                  Configure SMTP settings in environment variables (SMTP_HOST, SMTP_USER, SMTP_PASSWORD)
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Storage Configuration */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/20 rounded-lg">
+                    <Cloud className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-zinc-100 text-base">Screenshot Storage</CardTitle>
+                    <CardDescription>S3-compatible storage for screenshots</CardDescription>
+                  </div>
+                </div>
+                {integrations.storage.configured ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Configured
+                  </Badge>
+                ) : (
+                  <Badge className="bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+                    <XCircle className="w-3 h-3 mr-1" /> Not Configured
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {integrations.storage.configured && integrations.storage.accessible ? (
+                <div className="space-y-2 text-sm text-zinc-400">
+                  <p>Bucket: {integrations.storage.bucket}</p>
+                  <p>Endpoint: {integrations.storage.endpoint}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500">
+                  Configure S3 settings in environment variables (S3_ENDPOINT_URL, S3_ACCESS_KEY, S3_SECRET_KEY)
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* SSO Configuration */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/20 rounded-lg">
+                    <Key className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-zinc-100 text-base">SAML Single Sign-On</CardTitle>
+                    <CardDescription>Enterprise SSO integration</CardDescription>
+                  </div>
+                </div>
+                {integrations.sso.configured ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Configured
+                  </Badge>
+                ) : (
+                  <Badge className="bg-zinc-500/20 text-zinc-400 border-zinc-500/30">
+                    <XCircle className="w-3 h-3 mr-1" /> Not Configured
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2 text-sm">
+                  <p className="text-zinc-400">Service Provider (SP) Details:</p>
+                  <div className="p-3 bg-zinc-800/50 rounded-lg space-y-1 font-mono text-xs text-zinc-500">
+                    <p>Entity ID: {integrations.sso.entity_id || 'workmonitor'}</p>
+                    <p>ACS URL: {integrations.sso.acs_url || window.location.origin + '/api/sso/saml/acs'}</p>
+                  </div>
+                </div>
+                {!integrations.sso.configured && (
+                  <p className="text-sm text-zinc-500">
+                    Configure SAML IdP settings in environment variables (SAML_IDP_SSO_URL, SAML_IDP_CERT)
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
