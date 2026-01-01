@@ -78,7 +78,7 @@ chat_manager = ChatConnectionManager()
 
 # ==================== AI CHATBOT ====================
 
-AI_SYSTEM_PROMPT = """You are WorkMonitor AI Assistant, an expert support chatbot for the WorkMonitor employee time tracking and monitoring platform.
+AI_SYSTEM_PROMPT = """You are Working Tracker AI Assistant, an expert support chatbot for the Working Tracker employee time tracking and monitoring platform.
 
 You have comprehensive knowledge about:
 

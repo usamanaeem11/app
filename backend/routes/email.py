@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 # Email Templates
 TEMPLATES = {
     "welcome": {
-        "subject": "Welcome to WorkMonitor!",
+        "subject": "Welcome to Working Tracker!",
         "body": """
 Hello {name},
 
-Welcome to WorkMonitor! Your account has been successfully created.
+Welcome to Working Tracker! Your account has been successfully created.
 
 You can now:
 - Track your working time
@@ -30,7 +30,7 @@ You can now:
 Get started by downloading our desktop tracker or logging into the web dashboard.
 
 Best regards,
-The WorkMonitor Team
+The Working Tracker Team
 """
     },
     "timesheet_approval": {
@@ -46,7 +46,7 @@ Total Hours: {total_hours}
 View your timesheet: {link}
 
 Best regards,
-The WorkMonitor Team
+The Working Tracker Team
 """
     },
     "leave_request": {
@@ -62,7 +62,7 @@ End Date: {end_date}
 {notes}
 
 Best regards,
-The WorkMonitor Team
+The Working Tracker Team
 """
     },
     "invoice": {
@@ -84,25 +84,25 @@ Best regards,
 """
     },
     "subscription_renewal": {
-        "subject": "Your WorkMonitor Subscription is Expiring Soon",
+        "subject": "Your Working Tracker Subscription is Expiring Soon",
         "body": """
 Hello {name},
 
-Your WorkMonitor subscription will expire on {expiry_date}.
+Your Working Tracker subscription will expire on {expiry_date}.
 
 Current Plan: {plan_name}
 Users: {num_users}
 
-To continue using WorkMonitor without interruption, please renew your subscription.
+To continue using Working Tracker without interruption, please renew your subscription.
 
 Renew Now: {renewal_link}
 
 Best regards,
-The WorkMonitor Team
+The Working Tracker Team
 """
     },
     "password_reset": {
-        "subject": "Reset Your WorkMonitor Password",
+        "subject": "Reset Your Working Tracker Password",
         "body": """
 Hello {name},
 
@@ -115,7 +115,7 @@ This link will expire in 1 hour.
 If you didn't request this, please ignore this email.
 
 Best regards,
-The WorkMonitor Team
+The Working Tracker Team
 """
     }
 }
@@ -126,7 +126,7 @@ class EmailConfig(BaseModel):
     smtp_user: str
     smtp_password: str
     from_email: str
-    from_name: str = "WorkMonitor"
+    from_name: str = "Working Tracker"
     use_tls: bool = True
 
 class SendEmailRequest(BaseModel):
@@ -151,7 +151,7 @@ def get_smtp_config():
     user = os.environ.get('SMTP_USER')
     password = os.environ.get('SMTP_PASSWORD')
     from_email = os.environ.get('SMTP_FROM_EMAIL', user)
-    from_name = os.environ.get('SMTP_FROM_NAME', 'WorkMonitor')
+    from_name = os.environ.get('SMTP_FROM_NAME', 'Working Tracker')
     use_tls = os.environ.get('SMTP_USE_TLS', 'true').lower() == 'true'
     
     if not all([host, user, password]):

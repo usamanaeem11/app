@@ -275,7 +275,7 @@ async def sync_time_entry_to_outlook(
     
     event = OutlookEvent(
         subject=f"Work: {data.project_name or 'Time Entry'}",
-        body=data.description or f"Time tracked via WorkMonitor\nEntry ID: {data.time_entry_id}",
+        body=data.description or f"Time tracked via Working Tracker\nEntry ID: {data.time_entry_id}",
         start_time=time_entry["start_time"],
         end_time=time_entry.get("end_time") or datetime.now(timezone.utc).isoformat()
     )

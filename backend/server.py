@@ -2279,7 +2279,7 @@ async def websocket_endpoint(websocket: WebSocket, company_id: str):
 
 @api_router.get("/")
 async def root():
-    return {"message": "WorkMonitor API v1.0", "status": "running"}
+    return {"message": "Working Tracker API v1.0", "status": "running"}
 
 # ==================== STRIPE WEBHOOK ====================
 @api_router.post("/webhook/stripe")
