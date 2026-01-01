@@ -77,7 +77,13 @@ export default function Settings() {
 
   useEffect(() => {
     fetchCompany();
-  }, []);
+    fetchIntegrations();
+    
+    // Check for calendar connection callback
+    if (searchParams.get('calendar') === 'connected') {
+      toast.success('Google Calendar connected successfully!');
+    }
+  }, [searchParams]);
 
   const fetchCompany = async () => {
     try {
@@ -92,6 +98,47 @@ export default function Settings() {
       console.error('Error fetching company:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchIntegrations = async () => {
+    try {
+      const [calendarRes, emailRes, storageRes, ssoRes] = await Promise.all([
+        calendarAPI.getStatus(user?.user_id).catch(() => ({ data: { connected: false } })),
+        emailAPI.getStatus().catch(() => ({ data: { configured: false } })),
+        storageAPI.getStatus().catch(() => ({ data: { configured: false } })),
+        ssoAPI.getStatus().catch(() => ({ data: { saml: { configured: false } } }))
+      ]);
+      
+      setIntegrations({
+        calendar: calendarRes.data,
+        email: emailRes.data,
+        storage: storageRes.data,
+        sso: ssoRes.data?.saml || { configured: false }
+      });
+    } catch (error) {
+      console.error('Error fetching integrations:', error);
+    }
+  };
+
+  const handleConnectCalendar = async () => {
+    try {
+      const response = await calendarAPI.connect();
+      if (response.data.auth_url) {
+        window.location.href = response.data.auth_url;
+      }
+    } catch (error) {
+      toast.error('Failed to connect Google Calendar');
+    }
+  };
+
+  const handleDisconnectCalendar = async () => {
+    try {
+      await calendarAPI.disconnect(user?.user_id);
+      toast.success('Google Calendar disconnected');
+      fetchIntegrations();
+    } catch (error) {
+      toast.error('Failed to disconnect calendar');
     }
   };
 
