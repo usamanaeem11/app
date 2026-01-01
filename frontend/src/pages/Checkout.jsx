@@ -108,17 +108,15 @@ const Checkout = () => {
     try {
       // For card payments, use Stripe checkout
       if (paymentMethod === 'card') {
-        const res = await api.post('/payments/create-checkout-session', {
-          plan_type: planId,
-          billing_cycle: billingCycle,
+        const res = await api.post('/payments/checkout/session', {
+          plan: billingCycle,  // monthly, quarterly, yearly
           num_users: numUsers,
-          success_url: `${window.location.origin}/subscription?success=true`,
-          cancel_url: `${window.location.origin}/checkout?plan=${planId}&billing=${billingCycle}&users=${numUsers}`,
+          origin_url: window.location.origin,
         });
         
         // Redirect to Stripe checkout
-        if (res.data.checkout_url) {
-          window.location.href = res.data.checkout_url;
+        if (res.data.url) {
+          window.location.href = res.data.url;
           return;
         }
       } else {
