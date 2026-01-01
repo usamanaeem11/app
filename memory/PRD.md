@@ -103,7 +103,17 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 - [x] **Rebranding**: Complete rebranding from WorkMonitor to Working Tracker (2026-01-01)
 - [x] **Signup Pricing Widget**: Shows "$2.99/user/month", "14-day free trial", links to /pricing
 
-*Note: PayPal, Payoneer, Wise are MOCKED - only Stripe is fully integrated
+### Phase 6 - Payment & Feature Gating ✅ (Completed 2026-01-02)
+- [x] **Simplified Checkout**: Removed PayPal, Payoneer, Wise - Card/Stripe only
+- [x] **Feature Gating Applied** to all protected endpoints:
+  - Payroll endpoints (GET/POST) - Pro+ required
+  - Invoice endpoints (GET/POST) - Pro+ required  
+  - Leave management (GET/POST) - Pro+ required
+  - Shift scheduling (GET/POST) - Pro+ required
+  - Attendance (clock-in/out, GET) - Pro+ required
+  - Screenshot limit (100/day for Starter, unlimited for Pro+)
+- [x] **Pricing FAQ Updated** - Mentions only Visa, Mastercard, Amex
+- [x] All 19 backend + frontend tests passed (100%)
 
 ## Current Subscription Plans (Updated 2026-01-01)
 | Plan | Price/User/Month | Yearly Price | Key Features |
