@@ -1849,9 +1849,17 @@ async def get_attendance_report(
 
 # ==================== INVOICE ROUTES ====================
 @api_router.post("/invoices")
-async def create_invoice(invoice: InvoiceCreate, user: dict = Depends(get_current_user)):
+async def create_invoice(request: Request, invoice: InvoiceCreate, user: dict = Depends(get_current_user)):
     if user["role"] not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Feature gate check for invoices
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "invoices")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "invoices", "required_plan": "Pro", "message": "Invoice generation requires the Pro plan or higher."}
+        )
     
     invoice_id = f"invoice_{uuid.uuid4().hex[:12]}"
     
@@ -1887,12 +1895,21 @@ async def create_invoice(invoice: InvoiceCreate, user: dict = Depends(get_curren
 
 @api_router.get("/invoices")
 async def get_invoices(
+    request: Request,
     status: Optional[str] = None,
     project_id: Optional[str] = None,
     user: dict = Depends(get_current_user)
 ):
     if user["role"] not in ["admin", "hr", "manager"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Feature gate check for invoices
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "invoices")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "invoices", "required_plan": "Pro", "message": "Invoice management requires the Pro plan or higher."}
+        )
     
     query = {"company_id": user["company_id"]}
     if status:
