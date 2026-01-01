@@ -98,50 +98,12 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 
 *Note: PayPal, Payoneer, Wise are MOCKED - only Stripe is fully integrated
 
-## Subscription Plans
-| Plan | Duration | Price/User/Month | Discount |
-|------|----------|------------------|----------|
-| Monthly | 1 month | $2.00 | 0% |
-| Quarterly | 3 months | $1.90 | 5% |
-| 6 Months | 6 months | $1.80 | 10% |
-| Yearly | 12 months | $1.60 | 20% |
-
-## Environment Variables Required
-
-### Required (Active)
-```
-MONGO_URL=mongodb://localhost:27017
-DB_NAME=test_database
-STRIPE_API_KEY=sk_test_xxx
-EMERGENT_LLM_KEY=sk-emergent-xxx
-```
-
-### Optional Integrations
-```
-# S3-Compatible Storage (Contabo)
-S3_ENDPOINT_URL=https://eu2.contabostorage.com
-S3_ACCESS_KEY=your_access_key
-S3_SECRET_KEY=your_secret_key
-S3_BUCKET_NAME=workmonitor-screenshots
-
-# SMTP Email
-SMTP_HOST=mail.yourdomain.com
-SMTP_PORT=587
-SMTP_USER=noreply@yourdomain.com
-SMTP_PASSWORD=your_password
-SMTP_FROM_NAME=WorkMonitor
-
-# Google Calendar
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_CALENDAR_REDIRECT_URI=http://localhost:8001/api/calendar/callback
-
-# SAML SSO
-SAML_ENTITY_ID=workmonitor
-SAML_ACS_URL=http://localhost:8001/api/sso/saml/acs
-SAML_IDP_SSO_URL=https://your-idp.com/saml/sso
-SAML_IDP_CERT=base64_certificate
-```
+## Current Subscription Plans (Updated 2026-01-01)
+| Plan | Price/User/Month | Yearly Price | Key Features |
+|------|------------------|--------------|--------------|
+| Starter | $2.99 | $28.70/year (20% off) | Basic tracking, 100 screenshots/day |
+| Pro | $4.99 | $47.90/year (20% off) | Unlimited screenshots, HR, Payroll, Team Chat |
+| Business | $6.99 | $67.10/year (20% off) | Video screenshots, SSO, API, White-label |
 
 ## Code Architecture
 ```
@@ -149,6 +111,9 @@ SAML_IDP_CERT=base64_certificate
 ├── backend/
 │   ├── server.py               # Main FastAPI app
 │   └── routes/
+│       ├── pricing.py          # Pricing plans & subscriptions
+│       ├── team_chat.py        # Team chat & AI chatbot
+│       ├── feature_gate.py     # Feature gating middleware
 │       ├── payments.py         # Stripe integration
 │       ├── ai_insights.py      # GPT-5.2 analysis
 │       ├── storage.py          # S3 screenshot storage
@@ -159,20 +124,38 @@ SAML_IDP_CERT=base64_certificate
 ├── frontend/
 │   └── src/
 │       ├── pages/
+│       │   ├── PricingPage.jsx # Public pricing page
+│       │   ├── Checkout.jsx    # Payment checkout
+│       │   ├── TeamChat.jsx    # Team chat with AI
 │       │   ├── Subscription.jsx
 │       │   ├── AIInsights.jsx
 │       │   ├── UserManagement.jsx
 │       │   ├── Settings.jsx (with Integrations tab)
 │       │   └── ... (other pages)
 │       └── lib/api.js          # All API functions
+├── tests/
+│   └── test_pricing_chat_apis.py  # Backend API tests
 └── desktop-tracker/            # Electron app
-    ├── main.js                 # Main process
-    ├── preload.js              # IPC bridge
-    ├── index.html              # Tracker UI
-    └── package.json            # Build config
 ```
 
 ## API Endpoints
+
+### Pricing & Subscription APIs (NEW)
+- `/api/pricing/plans` - Get all pricing plans with features
+- `/api/pricing/plan/{plan_id}` - Get specific plan details
+- `/api/pricing/trial/start` - Start 14-day free trial
+- `/api/pricing/subscription/{company_id}` - Get subscription status
+- `/api/pricing/features/{company_id}` - Get company's enabled features
+- `/api/pricing/subscribe` - Create new subscription
+- `/api/pricing/upgrade` - Upgrade plan
+- `/api/pricing/downgrade` - Downgrade plan
+
+### Team Chat APIs (NEW)
+- `/api/chat/channels` - Get/Create chat channels
+- `/api/chat/channels/{id}/messages` - Get channel messages
+- `/api/chat/messages` - Send message
+- `/api/chat/ai/query` - Query AI chatbot
+- `/api/chat/ws/{channel}/{user}` - WebSocket for real-time chat
 
 ### Core APIs
 - `/api/auth/*` - Authentication
@@ -185,7 +168,7 @@ SAML_IDP_CERT=base64_certificate
 - `/api/projects` - Project management
 - `/api/invoices` - Invoice management
 
-### New Phase 4 APIs
+### Integration APIs
 - `/api/payments/*` - Stripe checkout
 - `/api/ai/*` - AI productivity analysis
 - `/api/storage/*` - S3 screenshot storage
@@ -193,37 +176,33 @@ SAML_IDP_CERT=base64_certificate
 - `/api/pdf/*` - PDF generation
 - `/api/calendar/*` - Google Calendar
 - `/api/sso/*` - SAML SSO
-- `/api/subscription/*` - Subscription management
 
 ## Prioritized Backlog
 
+### P0 - Critical (IN PROGRESS)
+- [ ] Apply feature gating middleware to all protected endpoints
+- [ ] Implement PayPal payment integration
+- [ ] Implement Payoneer payment integration
+- [ ] Implement Wise payment integration
+
 ### P1 - Important (Next)
 - [ ] Mobile apps (React Native for Android/iOS)
-- [ ] Browser extension for URL tracking
+- [ ] Browser extensions (Chrome, Firefox, Edge)
 - [ ] Multiple currency support for payroll
-- [ ] Recurring shifts auto-assignment
+- [ ] Custom report builder implementation
+- [ ] Outlook calendar integration
 
 ### P2 - Nice to Have
-- [ ] Team chat integration
-- [ ] Outlook calendar integration
 - [ ] Advanced AI reports with charts
-- [ ] Custom report builder
-
-## Desktop Tracker Build Instructions
-```bash
-cd /app/desktop-tracker
-npm install
-npm start          # Development
-npm run build      # Build for current platform
-npm run build:win  # Windows
-npm run build:mac  # macOS
-npm run build:linux # Linux
-```
+- [ ] Recurring shifts auto-assignment
+- [ ] White-label branding implementation
+- [ ] HIPAA & GDPR compliance indicators
 
 ## Test Reports
 - `/app/test_reports/iteration_1.json` - Phase 1 MVP
 - `/app/test_reports/iteration_2.json` - Phase 2 HRMS
 - `/app/test_reports/iteration_3.json` - Phase 3 Subscription & RBAC
+- `/app/test_reports/iteration_4.json` - Phase 5 Pricing & Team Chat (12/12 tests passed)
 
 ## Known Limitations
 - Screenshots are stored as references until S3 credentials are configured
