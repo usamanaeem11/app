@@ -1541,9 +1541,17 @@ async def delete_task(task_id: str, user: dict = Depends(get_current_user)):
 
 # ==================== SHIFT ROUTES ====================
 @api_router.post("/shifts")
-async def create_shift(shift: ShiftCreate, user: dict = Depends(get_current_user)):
+async def create_shift(request: Request, shift: ShiftCreate, user: dict = Depends(get_current_user)):
     if user["role"] not in ["admin", "hr", "manager"]:
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Feature gate check for shift scheduling
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "shift_scheduling")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "shift_scheduling", "required_plan": "Pro", "message": "Shift scheduling requires the Pro plan or higher."}
+        )
     
     shift_id = f"shift_{uuid.uuid4().hex[:12]}"
     doc = {
@@ -1561,7 +1569,15 @@ async def create_shift(shift: ShiftCreate, user: dict = Depends(get_current_user
     return {"shift_id": shift_id, "message": "Shift created"}
 
 @api_router.get("/shifts")
-async def get_shifts(user: dict = Depends(get_current_user)):
+async def get_shifts(request: Request, user: dict = Depends(get_current_user)):
+    # Feature gate check for shift scheduling
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "shift_scheduling")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "shift_scheduling", "required_plan": "Pro", "message": "Shift scheduling requires the Pro plan or higher."}
+        )
+    
     shifts = await db.shifts.find(
         {"company_id": user["company_id"]},
         {"_id": 0}
