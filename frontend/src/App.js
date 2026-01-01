@@ -27,6 +27,8 @@ import Invoices from "./pages/Invoices";
 import Subscription from "./pages/Subscription";
 import AIInsights from "./pages/AIInsights";
 import UserManagement from "./pages/UserManagement";
+import PricingPage from "./pages/PricingPage";
+import TeamChat from "./pages/TeamChat";
 
 // Router component that handles session_id detection
 function AppRouter() {
