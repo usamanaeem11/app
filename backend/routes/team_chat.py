@@ -30,6 +30,7 @@ class SendMessageRequest(BaseModel):
 class CreateChannelRequest(BaseModel):
     name: str
     channel_type: str = "team"  # team, direct, support
+    company_id: Optional[str] = None
     members: Optional[List[str]] = None
     is_private: bool = False
 
@@ -187,6 +188,10 @@ async def create_channel(data: CreateChannelRequest, request: Request):
         "last_message_at": None
     }
     
+    # Store company_id if provided in the request
+    if hasattr(data, 'company_id') and data.company_id:
+        channel["company_id"] = data.company_id
+    
     await db.chat_channels.insert_one(channel)
     
     return {"channel_id": channel_id, "name": data.name}
@@ -204,7 +209,8 @@ async def get_channels(company_id: str, request: Request):
     
     # Add default support channel if not exists
     support_channel = await db.chat_channels.find_one(
-        {"company_id": company_id, "type": "support"}
+        {"company_id": company_id, "type": "support"},
+        {"_id": 0}
     )
     
     if not support_channel:
@@ -217,7 +223,9 @@ async def get_channels(company_id: str, request: Request):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.chat_channels.insert_one(support_channel)
-        channels.append(support_channel)
+        # Remove _id from the dict before returning
+        support_channel_clean = {k: v for k, v in support_channel.items() if k != '_id'}
+        channels.append(support_channel_clean)
     
     return {"channels": channels}
 
