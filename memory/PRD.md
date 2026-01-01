@@ -61,42 +61,42 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
 - [x] AI Insights Page UI
 - [x] User Management Page UI
 
-### Phase 4 - Enterprise Features ✅ (Current)
-- [x] **Electron Desktop Tracker** - Cross-platform desktop app with:
-  - Screenshot capture at configurable intervals
-  - Activity monitoring (app/window tracking)
-  - Idle detection algorithm
-  - System tray integration
-  - Auto-start capability
-  - Settings configuration
-- [x] **S3-Compatible Storage** (Contabo/MinIO/AWS):
-  - Screenshot upload/download
-  - Presigned URLs for secure access
-  - Storage status monitoring
-- [x] **PDF Invoice Generation**:
-  - Professional PDF invoices with ReportLab
-  - Timesheet PDF export
-  - Base64 and direct download options
-- [x] **SMTP Email Notifications**:
-  - Welcome emails
-  - Timesheet approvals
-  - Leave request notifications
-  - Invoice delivery
-  - Subscription renewal reminders
-  - Password reset
-- [x] **Google Calendar Integration**:
-  - OAuth 2.0 connection
-  - Event sync from time entries
-  - Calendar event creation
-  - Two-way sync support
-- [x] **SAML SSO**:
-  - SP metadata generation
-  - IdP configuration
-  - SAML response parsing
-  - Automatic user provisioning
-- [x] **Settings Integrations Tab**:
-  - Status display for all integrations
-  - Connection management UI
+### Phase 4 - Enterprise Features ✅
+- [x] **Electron Desktop Tracker** - Cross-platform desktop app
+- [x] **S3-Compatible Storage** (Contabo/MinIO/AWS)
+- [x] **PDF Invoice Generation** with ReportLab
+- [x] **SMTP Email Notifications**
+- [x] **Google Calendar Integration**
+- [x] **SAML SSO** (placeholder)
+- [x] **Settings Integrations Tab**
+
+### Phase 5 - SaaS Pricing & Team Chat ✅ (Completed 2026-01-01)
+- [x] **Three-Tier Pricing System**:
+  - Starter ($2.99/user/mo): Basic tracking, 100 screenshots/day
+  - Pro ($4.99/user/mo): Unlimited screenshots, HR features, payroll
+  - Business ($6.99/user/mo): Video screenshots, SSO, API, white-label
+  - 20% yearly discount across all plans
+- [x] **14-Day Free Trial**: No credit card required, auto-downgrade to Starter
+- [x] **Public Pricing Page** at /pricing with:
+  - Plan comparison cards
+  - Monthly/Yearly billing toggle
+  - Team size selector
+  - Feature comparison table
+  - FAQ section
+- [x] **Checkout Page** at /checkout with:
+  - Order summary
+  - Multiple payment methods (Card, PayPal*, Payoneer*, Wise*)
+  - Auto-recurring payment option
+  - SSL security badge
+- [x] **Feature Gating Middleware**: Plan-based access control
+- [x] **Team Chat** at /team-chat with:
+  - AI Support channel with GPT-5.2 chatbot
+  - Create team channels
+  - Direct messaging (placeholder)
+  - Real-time WebSocket support
+- [x] **AI Chatbot**: WorkMonitor AI Assistant trained on app features
+
+*Note: PayPal, Payoneer, Wise are MOCKED - only Stripe is fully integrated
 
 ## Subscription Plans
 | Plan | Duration | Price/User/Month | Discount |
