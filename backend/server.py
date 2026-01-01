@@ -1747,11 +1747,20 @@ async def clock_out(request: Request, user: dict = Depends(get_current_user)):
 
 @api_router.get("/attendance")
 async def get_attendance(
+    request: Request,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     user_id: Optional[str] = None,
     user: dict = Depends(get_current_user)
 ):
+    # Feature gate check for attendance
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "attendance_management")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "attendance_management", "required_plan": "Pro", "message": "Attendance management requires the Pro plan or higher."}
+        )
+    
     query = {"company_id": user["company_id"]}
     
     if user["role"] == "employee":
