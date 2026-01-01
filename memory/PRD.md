@@ -99,7 +99,9 @@ Build a multi-platform workforce monitoring system that tracks employee time, pr
   - Create team channels
   - Direct messaging (placeholder)
   - Real-time WebSocket support
-- [x] **AI Chatbot**: WorkMonitor AI Assistant trained on app features
+- [x] **AI Chatbot**: Working Tracker AI Assistant trained on app features
+- [x] **Rebranding**: Complete rebranding from WorkMonitor to Working Tracker (2026-01-01)
+- [x] **Signup Pricing Widget**: Shows "$2.99/user/month", "14-day free trial", links to /pricing
 
 *Note: PayPal, Payoneer, Wise are MOCKED - only Stripe is fully integrated
 
