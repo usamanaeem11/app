@@ -29,6 +29,7 @@ import AIInsights from "./pages/AIInsights";
 import UserManagement from "./pages/UserManagement";
 import PricingPage from "./pages/PricingPage";
 import TeamChat from "./pages/TeamChat";
+import Checkout from "./pages/Checkout";
 
 // Router component that handles session_id detection
 function AppRouter() {
@@ -45,6 +46,7 @@ function AppRouter() {
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/pricing" element={<PricingPage />} />
 
       {/* Protected routes with dashboard layout */}
       <Route
@@ -74,6 +76,8 @@ function AppRouter() {
         <Route path="ai-insights" element={<AIInsights />} />
         <Route path="user-management" element={<UserManagement />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="team-chat" element={<TeamChat />} />
+        <Route path="checkout" element={<Checkout />} />
       </Route>
 
       {/* Catch all - redirect to dashboard */}
