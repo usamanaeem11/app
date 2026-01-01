@@ -2,7 +2,6 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, WebSock
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
@@ -15,6 +14,15 @@ import bcrypt
 import jwt
 import httpx
 from contextlib import asynccontextmanager
+
+# Import Supabase database adapter
+from utils.db_adapter import SupabaseDatabase
+from db import get_db
+from utils.screenshot_scheduler import screenshot_scheduler
+from utils.id_generator import (
+    generate_entry_id, generate_screenshot_id, generate_log_id,
+    generate_company_id, generate_user_id
+)
 
 # Import route modules
 from routes.payments import router as payments_router
@@ -37,10 +45,9 @@ from routes.video_screenshots import router as video_router
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Supabase connection
+supabase_client = get_db()
+db = SupabaseDatabase(supabase_client)
 
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'workmonitor-secret-key-2024')
@@ -455,23 +462,9 @@ async def can_access_user_data(current_user: dict, target_user_id: str) -> bool:
 async def lifespan(app: FastAPI):
     # Store db in app state for route access
     app.state.db = db
-    
-    # Create indexes
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index("user_id", unique=True)
-    await db.users.create_index("company_id")
-    await db.companies.create_index("company_id", unique=True)
-    await db.time_entries.create_index([("user_id", 1), ("start_time", -1)])
-    await db.screenshots.create_index([("user_id", 1), ("taken_at", -1)])
-    await db.activity_logs.create_index([("user_id", 1), ("timestamp", -1)])
-    await db.user_sessions.create_index("session_token", unique=True)
-    await db.subscriptions.create_index("company_id")
-    await db.manager_assignments.create_index([("manager_id", 1), ("company_id", 1)])
-    await db.disapproval_logs.create_index([("company_id", 1), ("created_at", -1)])
-    await db.payment_transactions.create_index([("company_id", 1), ("created_at", -1)])
-    logger.info("Database indexes created")
+    logger.info("Supabase database connected")
     yield
-    client.close()
+    logger.info("Application shutdown")
 
 # Create FastAPI app
 app = FastAPI(lifespan=lifespan)
@@ -486,24 +479,26 @@ async def register(user_data: UserCreate, response: Response):
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # Create company if provided
-    company_id = f"company_{uuid.uuid4().hex[:12]}"
+    company_id = generate_company_id()
     if user_data.company_name:
         company = {
             "company_id": company_id,
             "name": user_data.company_name,
             "timezone": "UTC",
             "tracking_policy": {
-                "screenshot_interval": 30,
+                "screenshot_interval": 600,
                 "idle_timeout": 300,
                 "auto_start": True,
-                "blur_screenshots": False
+                "blur_screenshots": False,
+                "track_activity": True,
+                "screenshot_enabled": True
             },
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.companies.insert_one(company)
-    
+
     # Create user
-    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    user_id = generate_user_id()
     user = {
         "user_id": user_id,
         "email": user_data.email,
@@ -615,20 +610,22 @@ async def process_session(request: Request, response: Response):
         )
     else:
         # Create new user and company
-        user_id = f"user_{uuid.uuid4().hex[:12]}"
-        company_id = f"company_{uuid.uuid4().hex[:12]}"
+        user_id = generate_user_id()
+        company_id = generate_company_id()
         role = "admin"
-        
+
         # Create company
         company = {
             "company_id": company_id,
             "name": f"{name}'s Company",
             "timezone": "UTC",
             "tracking_policy": {
-                "screenshot_interval": 30,
+                "screenshot_interval": 600,
                 "idle_timeout": 300,
                 "auto_start": True,
-                "blur_screenshots": False
+                "blur_screenshots": False,
+                "track_activity": True,
+                "screenshot_enabled": True
             },
             "created_at": datetime.now(timezone.utc).isoformat()
         }
@@ -781,15 +778,50 @@ async def update_team_member(user_id: str, data: dict, user: dict = Depends(get_
     )
     return {"message": "Team member updated"}
 
+# Screenshot capture callback
+async def capture_screenshot_callback(entry_id: str, user_id: str, company_id: str):
+    """Callback function to capture screenshots automatically"""
+    try:
+        # Get company tracking policy
+        company = await db.companies.find_one({"company_id": company_id})
+        if not company:
+            return
+
+        tracking_policy = company.get("tracking_policy", {})
+
+        # Create a placeholder screenshot (actual screenshot would come from desktop app)
+        screenshot_id = generate_screenshot_id()
+        screenshot_doc = {
+            "screenshot_id": screenshot_id,
+            "user_id": user_id,
+            "company_id": company_id,
+            "time_entry_id": entry_id,
+            "s3_url": f"placeholder_{screenshot_id}.jpg",  # Would be real S3 URL in production
+            "taken_at": datetime.now(timezone.utc).isoformat(),
+            "blurred": tracking_policy.get("blur_screenshots", False),
+            "app_name": "Auto-captured",
+            "window_title": "Background capture",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        await db.screenshots.insert_one(screenshot_doc)
+        logger.info(f"Auto-captured screenshot {screenshot_id} for entry {entry_id}")
+
+    except Exception as e:
+        logger.error(f"Error in capture_screenshot_callback: {e}")
+
+# Set the screenshot callback
+screenshot_scheduler.set_screenshot_callback(capture_screenshot_callback)
+
 # ==================== TIME ENTRIES ROUTES ====================
 @api_router.post("/time-entries")
 async def create_time_entry(entry: TimeEntryCreate, user: dict = Depends(get_current_user)):
-    entry_id = f"entry_{uuid.uuid4().hex[:12]}"
-    
+    entry_id = generate_entry_id()
+
     duration = 0
     if entry.end_time:
         duration = int((entry.end_time - entry.start_time).total_seconds())
-    
+
     doc = {
         "entry_id": entry_id,
         "user_id": user["user_id"],
@@ -805,13 +837,29 @@ async def create_time_entry(entry: TimeEntryCreate, user: dict = Depends(get_cur
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.time_entries.insert_one(doc)
-    
+
+    # Start screenshot scheduler if entry is active
+    if not entry.end_time:
+        company = await db.companies.find_one({"company_id": user["company_id"]})
+        if company:
+            tracking_policy = company.get("tracking_policy", {})
+            screenshot_interval = tracking_policy.get("screenshot_interval", 600)
+
+            # Start the scheduler
+            await screenshot_scheduler.start_timer(
+                entry_id=entry_id,
+                user_id=user["user_id"],
+                company_id=user["company_id"],
+                interval=screenshot_interval
+            )
+            logger.info(f"Started screenshot scheduler for entry {entry_id}")
+
     # Broadcast to company
     await manager.broadcast(user["company_id"], {
         "type": "time_entry_created",
         "data": {"entry_id": entry_id, "user_id": user["user_id"], "user_name": user["name"]}
     })
-    
+
     return {"entry_id": entry_id, "message": "Time entry created"}
 
 @api_router.get("/time-entries")
@@ -851,35 +899,44 @@ async def get_active_entry(user: dict = Depends(get_current_user)):
 
 @api_router.put("/time-entries/{entry_id}")
 async def update_time_entry(entry_id: str, data: TimeEntryUpdate, user: dict = Depends(get_current_user)):
-    entry = await db.time_entries.find_one({"entry_id": entry_id}, {"_id": 0})
+    entry = await db.time_entries.find_one({"entry_id": entry_id})
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
-    
+
     # Check permission
     if entry["user_id"] != user["user_id"] and user["role"] not in ["admin", "manager"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     update_data = {}
     if data.end_time:
         update_data["end_time"] = data.end_time.isoformat()
         start_time = datetime.fromisoformat(entry["start_time"])
         update_data["duration"] = int((data.end_time - start_time).total_seconds())
         update_data["status"] = "completed"
+
+        # Stop screenshot scheduler when entry is stopped
+        await screenshot_scheduler.stop_timer(entry_id)
+        logger.info(f"Stopped screenshot scheduler for entry {entry_id}")
+
     if data.idle_time is not None:
         update_data["idle_time"] = data.idle_time
     if data.notes is not None:
         update_data["notes"] = data.notes
     if data.status:
         update_data["status"] = data.status
-    
+
+        # Stop scheduler if status is changed to stopped/paused
+        if data.status in ["stopped", "paused", "completed"]:
+            await screenshot_scheduler.stop_timer(entry_id)
+
     await db.time_entries.update_one({"entry_id": entry_id}, {"$set": update_data})
-    
+
     # Broadcast update
     await manager.broadcast(user["company_id"], {
         "type": "time_entry_updated",
         "data": {"entry_id": entry_id, "user_id": user["user_id"]}
     })
-    
+
     return {"message": "Entry updated"}
 
 @api_router.delete("/time-entries/{entry_id}")
