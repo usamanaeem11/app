@@ -44,7 +44,7 @@ export default function Login() {
           <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center">
             <Clock className="w-7 h-7 text-white" />
           </div>
-          <span className="font-bold text-2xl text-zinc-100 tracking-tight">WorkMonitor</span>
+          <span className="font-bold text-2xl text-zinc-100 tracking-tight">Working Tracker</span>
         </div>
 
         {/* Card */}

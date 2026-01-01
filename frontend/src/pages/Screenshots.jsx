@@ -36,7 +36,7 @@ const demoScreenshots = [
     s3_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
     taken_at: new Date().toISOString(),
     app_name: 'VS Code',
-    window_title: 'server.py - WorkMonitor',
+    window_title: 'server.py - Working Tracker',
     blurred: false,
   },
   {

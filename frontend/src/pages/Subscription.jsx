@@ -166,7 +166,7 @@ const Subscription = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-zinc-100">Subscription</h1>
-        <p className="text-zinc-400 mt-1">Manage your WorkMonitor subscription and billing</p>
+        <p className="text-zinc-400 mt-1">Manage your Working Tracker subscription and billing</p>
       </div>
 
       {/* Current Subscription Status */}

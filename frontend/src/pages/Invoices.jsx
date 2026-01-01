@@ -228,7 +228,7 @@ export default function Invoices() {
         invoice_number: invoice.invoice_number,
         invoice_date: format(new Date(invoice.created_at), 'yyyy-MM-dd'),
         due_date: format(new Date(invoice.due_date), 'yyyy-MM-dd'),
-        company_name: user?.company_name || 'WorkMonitor',
+        company_name: user?.company_name || 'Working Tracker',
         company_address: '',
         company_email: user?.email || '',
         client_name: invoice.client_name,

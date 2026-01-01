@@ -109,7 +109,7 @@ const TeamChat = () => {
           message_id: `ai_${Date.now()}`,
           content: res.data.response,
           sender_type: 'ai',
-          sender_name: 'WorkMonitor AI',
+          sender_name: 'Working Tracker AI',
           created_at: new Date().toISOString()
         };
         setMessages(prev => [...prev, aiMsg]);
@@ -292,9 +292,9 @@ const TeamChat = () => {
                     {aiMode ? (
                       <>
                         <Sparkles className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-zinc-100 mb-2">WorkMonitor AI Assistant</h3>
+                        <h3 className="text-lg font-medium text-zinc-100 mb-2">Working Tracker AI Assistant</h3>
                         <p className="text-zinc-500 max-w-md mx-auto">
-                          I'm here to help you with any questions about WorkMonitor. 
+                          I'm here to help you with any questions about Working Tracker. 
                           Ask me about time tracking, screenshots, reports, or any feature!
                         </p>
                       </>
@@ -361,7 +361,7 @@ const TeamChat = () => {
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={aiMode ? "Ask me anything about WorkMonitor..." : "Type a message..."}
+                  placeholder={aiMode ? "Ask me anything about Working Tracker..." : "Type a message..."}
                   className="flex-1 bg-zinc-800 border-zinc-700"
                   disabled={sending}
                 />
