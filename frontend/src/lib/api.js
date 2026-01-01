@@ -28,8 +28,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Only redirect if not on auth pages
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+      // Only redirect if not on public pages
+      const publicPaths = ['/login', '/signup', '/pricing', '/checkout'];
+      const isPublicPath = publicPaths.some(path => window.location.pathname.includes(path));
+      if (!isPublicPath) {
         window.location.href = '/login';
       }
     }
