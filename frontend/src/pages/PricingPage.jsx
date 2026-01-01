@@ -444,8 +444,8 @@ const PricingPage = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-zinc-400 text-sm">
-                  We accept credit/debit cards (Visa, Mastercard, Amex), PayPal, Payoneer, and Wise. 
-                  You can also set up auto-recurring payments or pay manually each billing period.
+                  We accept all major credit and debit cards including Visa, Mastercard, American Express, and Discover. 
+                  Payments are securely processed through Stripe. You can set up auto-recurring payments or pay manually each billing period.
                 </p>
               </CardContent>
             </Card>
