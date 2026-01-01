@@ -214,6 +214,10 @@ export default function Settings() {
             <Shield className="w-4 h-4 mr-2" />
             Privacy
           </TabsTrigger>
+          <TabsTrigger value="integrations" data-testid="tab-integrations">
+            <Key className="w-4 h-4 mr-2" />
+            Integrations
+          </TabsTrigger>
         </TabsList>
 
         {/* Company Settings */}
