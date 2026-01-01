@@ -15,6 +15,6 @@
     "email": "admin_test@workmonitor.com",
     "password": "Test123!"
   },
-  "backend_url": "https://trackstaff-2.preview.emergentagent.com",
+  "backend_url": "https://chronos-pro.preview.emergentagent.com",
   "frontend_url": "http://localhost:3000"
 }
