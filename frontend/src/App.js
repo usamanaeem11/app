@@ -78,7 +78,6 @@ function AppRouter() {
         <Route path="user-management" element={<UserManagement />} />
         <Route path="settings" element={<Settings />} />
         <Route path="team-chat" element={<TeamChat />} />
-        <Route path="checkout" element={<Checkout />} />
       </Route>
 
       {/* Catch all - redirect to dashboard */}
