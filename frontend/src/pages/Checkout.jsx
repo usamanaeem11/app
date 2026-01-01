@@ -5,15 +5,11 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
 import { Separator } from '../components/ui/separator';
 import { Checkbox } from '../components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Label } from '../components/ui/label';
 import {
   CreditCard,
-  Wallet,
-  Building2,
   Check,
   Shield,
   Loader2,
@@ -24,6 +20,7 @@ import {
   Star,
   Crown,
   ChevronRight,
+  Lock,
 } from 'lucide-react';
 import api from '../lib/api';
 
