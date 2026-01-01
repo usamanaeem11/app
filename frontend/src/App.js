@@ -30,6 +30,8 @@ import UserManagement from "./pages/UserManagement";
 import PricingPage from "./pages/PricingPage";
 import TeamChat from "./pages/TeamChat";
 import Checkout from "./pages/Checkout";
+import EmployeeAssignments from "./pages/EmployeeAssignments";
+import WorkAgreements from "./pages/WorkAgreements";
 
 // Router component that handles session_id detection
 function AppRouter() {
@@ -78,6 +80,8 @@ function AppRouter() {
         <Route path="user-management" element={<UserManagement />} />
         <Route path="settings" element={<Settings />} />
         <Route path="team-chat" element={<TeamChat />} />
+        <Route path="employee-assignments" element={<EmployeeAssignments />} />
+        <Route path="work-agreements" element={<WorkAgreements />} />
       </Route>
 
       {/* Catch all - redirect to dashboard */}

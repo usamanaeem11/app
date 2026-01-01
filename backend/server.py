@@ -41,6 +41,9 @@ from routes.feature_gate import FeatureGate, check_screenshot_limit
 from routes.multi_currency import router as currency_router
 from routes.white_label import router as branding_router
 from routes.video_screenshots import router as video_router
+from routes.employee_assignments import router as assignments_router
+from routes.work_agreements import router as agreements_router
+from routes.scheduled_timers import router as scheduled_timers_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2643,6 +2646,9 @@ api_router.include_router(payment_methods_router)
 api_router.include_router(chat_router)
 api_router.include_router(reports_router)
 api_router.include_router(outlook_router)
+api_router.include_router(assignments_router)
+api_router.include_router(agreements_router)
+api_router.include_router(scheduled_timers_router)
 
 # Then include api_router into app
 app.include_router(api_router)
