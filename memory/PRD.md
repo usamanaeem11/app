@@ -1,7 +1,12 @@
-# WorkMonitor - Employee Time Tracking & Monitoring Software
+# Working Tracker - Employee Time Tracking & Monitoring Software
 
 ## Overview
-WorkMonitor is a comprehensive employee monitoring and time-tracking SaaS platform similar to Hubstaff, Time Doctor, and WebWork. It provides real-time workforce monitoring, productivity tracking, AI-powered insights, and HRMS features.
+Working Tracker (workingtracker.com) is a comprehensive employee monitoring and time-tracking SaaS platform similar to Hubstaff, Time Doctor, and WebWork. It provides real-time workforce monitoring, productivity tracking, AI-powered insights, and HRMS features.
+
+## Brand Information
+- **Brand Name:** Working Tracker
+- **Website:** workingtracker.com
+- **Support Email:** support@workingtracker.com
 
 ## Original Problem Statement
 Build a multi-platform workforce monitoring system that tracks employee time, productivity, and activity across various platforms with silent background tracking, automatic screenshots, productivity insights, and enterprise-grade security.
