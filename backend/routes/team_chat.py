@@ -142,14 +142,14 @@ You have comprehensive knowledge about:
    - Activity not recording: Verify tracker is running
    - Login issues: Clear cache, reset password
 
-Always be helpful, concise, and professional. If you don't know something, suggest contacting support at support@workmonitor.com.
+Always be helpful, concise, and professional. If you don't know something, suggest contacting support at support@workingtracker.com.
 """
 
 async def get_ai_response(query: str, context: str = None) -> str:
     """Get AI response for user query"""
     api_key = os.environ.get('EMERGENT_LLM_KEY')
     if not api_key:
-        return "AI support is currently unavailable. Please contact support@workmonitor.com for assistance."
+        return "AI support is currently unavailable. Please contact support@workingtracker.com for assistance."
     
     try:
         chat = LlmChat(
@@ -167,7 +167,7 @@ async def get_ai_response(query: str, context: str = None) -> str:
         
     except Exception as e:
         logger.error(f"AI chatbot error: {str(e)}")
-        return "I'm having trouble processing your request. Please try again or contact support@workmonitor.com."
+        return "I'm having trouble processing your request. Please try again or contact support@workingtracker.com."
 
 # ==================== API ENDPOINTS ====================
 
