@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Working Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 320px;
+      min-height: 400px;
+      background: #09090b;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .header {
+      background: #18181b;
+      padding: 16px;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: #10b981;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .brand {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .content {
+      padding: 16px;
+    }
+    
+    /* Login Form */
+    .login-form {
+      display: none;
+    }
+    
+    .login-form.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: #a1a1aa;
+      margin-bottom: 6px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      color: #fafafa;
+      font-size: 14px;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #10b981;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+    }
+    
+    .btn-primary {
+      background: #10b981;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #27272a;
+      color: #fafafa;
+      border: 1px solid #3f3f46;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    /* Dashboard */
+    .dashboard {
+      display: none;
+    }
+    
+    .dashboard.active {
+      display: block;
+    }
+    
+    .user-info {
+      background: #18181b;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .user-email {
+      font-size: 12px;
+      color: #71717a;
+    }
+    
+    .stats-card {
+      background: #18181b;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .timer {
+      font-size: 48px;
+      font-weight: 200;
+      color: #10b981;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .timer-label {
+      font-size: 12px;
+      color: #71717a;
+      margin-top: 4px;
+    }
+    
+    .tracking-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #71717a;
+    }
+    
+    .status-dot.active {
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-text {
+      font-size: 12px;
+      color: #71717a;
+    }
+    
+    .current-site {
+      background: #27272a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .current-site-label {
+      font-size: 10px;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .current-site-url {
+      font-size: 13px;
+      color: #fafafa;
+      word-break: break-all;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .error {
+      background: #ef4444;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    
+    .error.show {
+      display: block;
+    }
+    
+    .footer {
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 11px;
+      color: #52525b;
+      border-top: 1px solid #27272a;
+    }
+    
+    .footer a {
+      color: #10b981;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">⏱️</div>
+    <span class="brand">Working Tracker</span>
+  </div>
+  
+  <div class="content">
+    <!-- Login Form -->
+    <div class="login-form active" id="loginForm">
+      <div class="error" id="loginError"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="name@company.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password">
+      </div>
+      <button class="btn btn-primary" id="loginBtn">Sign In</button>
+    </div>
+    
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+      <div class="user-info">
+        <div class="avatar" id="userAvatar">U</div>
+        <div>
+          <div class="user-name" id="userName">User</div>
+          <div class="user-email" id="userEmail">user@email.com</div>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="timer" id="timer">00:00:00</div>
+        <div class="timer-label">Time tracked today</div>
+        <div class="tracking-status">
+          <div class="status-dot" id="statusDot"></div>
+          <span class="status-text" id="statusText">Not tracking</span>
+        </div>
+      </div>
+      
+      <div class="current-site" id="currentSite" style="display: none;">
+        <div class="current-site-label">Currently tracking</div>
+        <div class="current-site-url" id="currentUrl">-</div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-primary" id="startBtn">▶️ Start Tracking</button>
+        <button class="btn btn-danger" id="stopBtn" style="display: none;">⏹ Stop Tracking</button>
+        <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <a href="https://workingtracker.com" target="_blank">workingtracker.com</a>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
