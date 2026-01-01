@@ -2471,6 +2471,11 @@ api_router.include_router(email_router)
 api_router.include_router(pdf_router)
 api_router.include_router(calendar_router)
 api_router.include_router(sso_router)
+api_router.include_router(pricing_router)
+api_router.include_router(payment_methods_router)
+api_router.include_router(chat_router)
+api_router.include_router(reports_router)
+api_router.include_router(outlook_router)
 
 # Then include api_router into app
 app.include_router(api_router)
