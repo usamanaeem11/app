@@ -30,6 +30,9 @@ from routes.team_chat import router as chat_router
 from routes.custom_reports import router as reports_router
 from routes.outlook_calendar import router as outlook_router
 from routes.feature_gate import FeatureGate, check_screenshot_limit
+from routes.multi_currency import router as currency_router
+from routes.white_label import router as branding_router
+from routes.video_screenshots import router as video_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
