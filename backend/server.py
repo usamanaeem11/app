@@ -893,7 +893,20 @@ async def delete_time_entry(entry_id: str, user: dict = Depends(get_current_user
 
 # ==================== SCREENSHOTS ROUTES ====================
 @api_router.post("/screenshots")
-async def create_screenshot(screenshot: ScreenshotCreate, user: dict = Depends(get_current_user)):
+async def create_screenshot(request: Request, screenshot: ScreenshotCreate, user: dict = Depends(get_current_user)):
+    # Check screenshot limit based on plan
+    limit_info = await check_screenshot_limit(db, user["company_id"], user["user_id"])
+    if not limit_info["allowed"]:
+        raise HTTPException(
+            status_code=403, 
+            detail={
+                "error": "screenshot_limit_reached", 
+                "limit": limit_info["limit"], 
+                "used": limit_info["used"],
+                "message": f"Daily screenshot limit reached ({limit_info['limit']} screenshots). Upgrade to Pro for unlimited screenshots."
+            }
+        )
+    
     screenshot_id = f"screenshot_{uuid.uuid4().hex[:12]}"
     
     doc = {
@@ -909,7 +922,7 @@ async def create_screenshot(screenshot: ScreenshotCreate, user: dict = Depends(g
     }
     await db.screenshots.insert_one(doc)
     
-    return {"screenshot_id": screenshot_id}
+    return {"screenshot_id": screenshot_id, "limit_info": limit_info}
 
 @api_router.get("/screenshots")
 async def get_screenshots(
