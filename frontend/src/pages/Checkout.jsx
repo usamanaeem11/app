@@ -77,33 +77,20 @@ const Checkout = () => {
     setProcessing(true);
 
     try {
-      // For card payments, use Stripe checkout
-      if (paymentMethod === 'card') {
-        const res = await api.post('/payments/checkout/session', {
-          plan: billingCycle,  // monthly, quarterly, yearly
-          num_users: numUsers,
-          origin_url: window.location.origin,
-        });
-        
-        // Redirect to Stripe checkout
-        if (res.data.url) {
-          window.location.href = res.data.url;
-          return;
-        }
-      } else {
-        // For other payment methods, create a pending subscription
-        const res = await api.post('/pricing/subscribe', {
-          plan: planId,
-          billing_cycle: billingCycle,
-          num_users: numUsers,
-          payment_method: paymentMethod,
-          auto_recurring: autoRecurring,
-        });
-        
-        // Show instructions for alternative payment methods
-        toast.success(`Subscription initiated. Please complete ${paymentMethod} payment.`);
-        navigate('/subscription');
+      // Use Stripe checkout
+      const res = await api.post('/payments/checkout/session', {
+        plan: billingCycle,  // monthly, quarterly, yearly
+        num_users: numUsers,
+        origin_url: window.location.origin,
+      });
+      
+      // Redirect to Stripe checkout
+      if (res.data.url) {
+        window.location.href = res.data.url;
+        return;
       }
+      
+      toast.error('Failed to create checkout session');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Payment failed. Please try again.');
     } finally {
