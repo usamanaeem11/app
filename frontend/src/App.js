@@ -47,6 +47,7 @@ function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/checkout" element={<Checkout />} />
 
       {/* Protected routes with dashboard layout */}
       <Route
