@@ -20,6 +20,7 @@ import {
   CreditCard,
   Brain,
   UserCog,
+  MessageSquare,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
@@ -39,6 +40,7 @@ const navItems = [
   { path: '/payroll', label: 'Payroll', icon: DollarSign, roles: ['admin', 'hr'] },
   { path: '/invoices', label: 'Invoices', icon: Receipt, roles: ['admin', 'hr'] },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['admin'] },
+  { path: '/team-chat', label: 'Team Chat', icon: MessageSquare, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'hr'] },
 ];
 
