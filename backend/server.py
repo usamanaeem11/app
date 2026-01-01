@@ -1062,7 +1062,15 @@ async def reject_timesheet(timesheet_id: str, reason: str = "", user: dict = Dep
 
 # ==================== LEAVE ROUTES ====================
 @api_router.post("/leaves")
-async def create_leave_request(leave: LeaveRequestCreate, user: dict = Depends(get_current_user)):
+async def create_leave_request(request: Request, leave: LeaveRequestCreate, user: dict = Depends(get_current_user)):
+    # Feature gate check for leave management
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "leave_management")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "leave_management", "required_plan": "Pro", "message": "Leave management requires the Pro plan or higher."}
+        )
+    
     leave_id = f"leave_{uuid.uuid4().hex[:12]}"
     
     doc = {
@@ -1083,10 +1091,19 @@ async def create_leave_request(leave: LeaveRequestCreate, user: dict = Depends(g
 
 @api_router.get("/leaves")
 async def get_leaves(
+    request: Request,
     status: Optional[str] = None,
     user_id: Optional[str] = None,
     user: dict = Depends(get_current_user)
 ):
+    # Feature gate check for leave management
+    has_feature = await FeatureGate.check_feature(db, user["company_id"], "leave_management")
+    if not has_feature:
+        raise HTTPException(
+            status_code=403, 
+            detail={"error": "feature_not_available", "feature": "leave_management", "required_plan": "Pro", "message": "Leave management requires the Pro plan or higher."}
+        )
+    
     query = {"company_id": user["company_id"]}
     
     if user["role"] == "employee":
