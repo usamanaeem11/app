@@ -51,9 +51,16 @@ const timezones = [
 
 export default function Settings() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [integrations, setIntegrations] = useState({
+    calendar: { connected: false },
+    email: { configured: false },
+    storage: { configured: false },
+    sso: { configured: false }
+  });
   const [settings, setSettings] = useState({
     name: '',
     timezone: 'UTC',
