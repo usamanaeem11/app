@@ -53,6 +53,7 @@ export default function Attendance() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth]);
 
   const fetchData = async () => {

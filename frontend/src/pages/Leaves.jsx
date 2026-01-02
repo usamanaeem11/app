@@ -66,6 +66,7 @@ export default function Leaves() {
 
   useEffect(() => {
     fetchLeaves();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchLeaves = async () => {

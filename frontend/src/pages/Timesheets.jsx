@@ -49,6 +49,7 @@ export default function Timesheets() {
 
   useEffect(() => {
     fetchTimesheets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchTimesheets = async () => {

@@ -71,6 +71,7 @@ export const WebSocketProvider = ({ children }) => {
         socket.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.company_id, connect]);
 
   const sendMessage = useCallback((message) => {

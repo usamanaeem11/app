@@ -63,12 +63,14 @@ const AIInsights = () => {
 
   useEffect(() => {
     fetchInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!loading) {
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserId, selectedDays]);
 
   const fetchInitialData = async () => {

@@ -40,6 +40,7 @@ const Checkout = () => {
 
   useEffect(() => {
     fetchPlanDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
   const fetchPlanDetails = async () => {
