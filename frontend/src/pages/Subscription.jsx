@@ -9,6 +9,7 @@ import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Separator } from '../components/ui/separator';
+import { Switch } from '../components/ui/switch';
 import {
   Check,
   CreditCard,
@@ -21,20 +22,24 @@ import {
   FileText,
   Loader2,
   Crown,
-  AlertCircle
+  AlertCircle,
+  Star,
+  Bot
 } from 'lucide-react';
+import { PRICING_TIERS } from '../data/pricingData';
 
 const Subscription = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const [plans, setPlans] = useState([]);
-  const [services, setServices] = useState([]);
   const [currentSubscription, setCurrentSubscription] = useState(null);
-  const [selectedPlan, setSelectedPlan] = useState('monthly');
+  const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [isYearly, setIsYearly] = useState(false);
   const [numUsers, setNumUsers] = useState(5);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
+
+  const plans = Object.values(PRICING_TIERS);
 
   useEffect(() => {
     fetchData();
@@ -43,13 +48,7 @@ const Subscription = () => {
 
   const fetchData = async () => {
     try {
-      const [plansRes, subscriptionRes] = await Promise.all([
-        subscriptionAPI.getPlans(),
-        subscriptionAPI.get().catch(() => null)
-      ]);
-      
-      setPlans(plansRes.data.plans);
-      setServices(plansRes.data.services);
+      const subscriptionRes = await subscriptionAPI.get().catch(() => null);
       setCurrentSubscription(subscriptionRes?.data);
     } catch (error) {
       console.error('Failed to fetch subscription data:', error);
@@ -117,6 +116,7 @@ const Subscription = () => {
     try {
       const res = await paymentAPI.createCheckoutSession({
         plan: selectedPlan,
+        billing_cycle: isYearly ? 'yearly' : 'monthly',
         num_users: numUsers,
         origin_url: window.location.origin
       });
@@ -132,11 +132,26 @@ const Subscription = () => {
   };
 
   const getSelectedPlan = () => plans.find(p => p.id === selectedPlan);
-  
+
+  const getPrice = (plan) => {
+    return isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+  };
+
   const calculateTotal = () => {
     const plan = getSelectedPlan();
     if (!plan) return 0;
-    return (plan.price_per_user_monthly * plan.duration_months * numUsers).toFixed(2);
+    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+    const multiplier = isYearly ? 12 : 1;
+    return (price * numUsers * multiplier).toFixed(2);
+  };
+
+  const getPlanIcon = (planId) => {
+    switch (planId) {
+      case 'starter': return <Zap className="w-6 h-6" />;
+      case 'pro': return <Star className="w-6 h-6" />;
+      case 'business': return <Crown className="w-6 h-6" />;
+      default: return <Zap className="w-6 h-6" />;
+    }
   };
 
   const formatDate = (dateStr) => {
@@ -224,54 +239,99 @@ const Subscription = () => {
         </Card>
       )}
 
+      {/* Billing Toggle */}
+      <div className="flex items-center justify-center gap-4 mb-4">
+        <span className={`text-sm ${!isYearly ? 'text-zinc-100' : 'text-zinc-500'}`}>Monthly</span>
+        <Switch
+          checked={isYearly}
+          onCheckedChange={setIsYearly}
+          className="data-[state=checked]:bg-emerald-600"
+        />
+        <span className={`text-sm ${isYearly ? 'text-zinc-100' : 'text-zinc-500'}`}>
+          Yearly
+          <Badge className="ml-2 bg-emerald-500/20 text-emerald-400 text-xs">Save 20%</Badge>
+        </span>
+      </div>
+
       {/* Pricing Plans */}
       <div>
         <h2 className="text-xl font-semibold text-zinc-100 mb-4">Choose Your Plan</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((plan) => (
-            <Card 
+            <Card
               key={plan.id}
               className={`cursor-pointer transition-all ${
-                selectedPlan === plan.id 
-                  ? 'bg-emerald-500/10 border-emerald-500' 
+                selectedPlan === plan.id
+                  ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500'
                   : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
-              }`}
+              } ${plan.popular ? 'border-blue-500/50' : ''}`}
               onClick={() => setSelectedPlan(plan.id)}
               data-testid={`plan-${plan.id}`}
             >
+              {plan.badge && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className={plan.popular ? 'bg-blue-500' : 'bg-purple-500'}>
+                    {plan.badge}
+                  </Badge>
+                </div>
+              )}
+
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-zinc-100">{plan.name}</CardTitle>
-                  {plan.discount_percent > 0 && (
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                      {plan.discount_percent}% OFF
-                    </Badge>
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-lg ${
+                      plan.id === 'pro' ? 'bg-blue-500/20 text-blue-500' :
+                      plan.id === 'business' ? 'bg-purple-500/20 text-purple-500' :
+                      'bg-emerald-500/20 text-emerald-500'
+                    }`}>
+                      {getPlanIcon(plan.id)}
+                    </div>
+                    <CardTitle className="text-lg text-zinc-100">{plan.name}</CardTitle>
+                  </div>
+                  {selectedPlan === plan.id && (
+                    <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
                   )}
                 </div>
-                <CardDescription>{plan.duration_months} month{plan.duration_months > 1 ? 's' : ''}</CardDescription>
+                <CardDescription className="mt-2">{plan.tagline}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-zinc-100">${plan.price_per_user_monthly.toFixed(2)}</span>
-                    <span className="text-zinc-500">/user/month</span>
+                    <span className="text-3xl font-bold text-zinc-100">${getPrice(plan).toFixed(2)}</span>
+                    <span className="text-zinc-500">/user/mo</span>
                   </div>
-                  {plan.discount_percent > 0 && (
-                    <p className="text-sm text-zinc-500 line-through">
-                      ${plan.base_price_per_user.toFixed(2)}/user/month
+                  {isYearly && (
+                    <p className="text-sm text-emerald-400">
+                      Save ${((plan.monthlyPrice - plan.yearlyPrice) * 12).toFixed(2)}/user/year
                     </p>
                   )}
+
+                  <Separator className="bg-zinc-800 my-3" />
+
+                  <div className="space-y-2">
+                    {plan.features.slice(0, 2).map((category, idx) => (
+                      <div key={idx}>
+                        {category.category && (
+                          <p className="text-xs font-semibold text-emerald-400 mb-1">
+                            {category.category}
+                          </p>
+                        )}
+                        <ul className="space-y-1">
+                          {category.items.slice(0, 2).map((item, itemIdx) => (
+                            <li key={itemIdx} className="flex items-start gap-2 text-xs text-zinc-400">
+                              <Check className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                    <p className="text-xs text-blue-400 pl-5">+many more features</p>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedPlan === plan.id 
-                    ? 'border-emerald-500 bg-emerald-500' 
-                    : 'border-zinc-600'
-                }`}>
-                  {selectedPlan === plan.id && <Check className="w-3 h-3 text-white" />}
-                </div>
-              </CardFooter>
             </Card>
           ))}
         </div>
@@ -318,12 +378,23 @@ const Subscription = () => {
               <Separator className="bg-zinc-800" />
 
               <div className="space-y-3">
-                <h4 className="font-medium text-zinc-100">All Plans Include:</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {services.slice(0, 12).map((service, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-zinc-400">
-                      <Check className="w-4 h-4 text-emerald-500" />
-                      {service}
+                <h4 className="font-medium text-zinc-100">Key Features:</h4>
+                <div className="space-y-2">
+                  {getSelectedPlan()?.features.slice(0, 3).map((category, idx) => (
+                    <div key={idx}>
+                      {category.category && (
+                        <p className="text-xs font-semibold text-emerald-400 mb-1">
+                          {category.category}
+                        </p>
+                      )}
+                      <ul className="space-y-1">
+                        {category.items.slice(0, 3).map((item, itemIdx) => (
+                          <li key={itemIdx} className="flex items-start gap-2 text-xs text-zinc-400">
+                            <Check className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   ))}
                 </div>
@@ -343,8 +414,8 @@ const Subscription = () => {
                   <span className="text-zinc-100">{getSelectedPlan()?.name}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
-                  <span>Duration</span>
-                  <span className="text-zinc-100">{getSelectedPlan()?.duration_months} month(s)</span>
+                  <span>Billing</span>
+                  <span className="text-zinc-100">{isYearly ? 'Yearly' : 'Monthly'}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Users</span>
@@ -352,24 +423,27 @@ const Subscription = () => {
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Price per user</span>
-                  <span className="text-zinc-100">${getSelectedPlan()?.price_per_user_monthly.toFixed(2)}/mo</span>
+                  <span className="text-zinc-100">${getPrice(getSelectedPlan()).toFixed(2)}/mo</span>
                 </div>
-                {getSelectedPlan()?.discount_percent > 0 && (
+                {isYearly && (
                   <div className="flex justify-between text-emerald-400">
-                    <span>Discount</span>
-                    <span>-{getSelectedPlan()?.discount_percent}%</span>
+                    <span>Yearly Discount</span>
+                    <span>-20%</span>
                   </div>
                 )}
               </div>
-              
+
               <Separator className="bg-zinc-800" />
-              
+
               <div className="flex justify-between text-lg font-semibold">
                 <span className="text-zinc-100">Total</span>
                 <span className="text-emerald-400" data-testid="total-price">${calculateTotal()}</span>
               </div>
-              
-              <Button 
+              <p className="text-xs text-zinc-500 text-center">
+                {isYearly ? 'Billed annually' : 'Billed monthly'}
+              </p>
+
+              <Button
                 onClick={handleSubscribe}
                 disabled={processing}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -387,7 +461,7 @@ const Subscription = () => {
                   </>
                 )}
               </Button>
-              
+
               <p className="text-xs text-zinc-500 text-center">
                 Secure payment powered by Stripe
               </p>
