@@ -28,7 +28,8 @@ COPY frontend/package.json frontend/package-lock.json ./
 
 # Install ALL dependencies (including devDependencies) for the build
 # ESLint plugins are needed during the build process
-RUN npm ci --include=dev --prefer-offline --no-audit && \
+# Use --legacy-peer-deps to handle peer dependency conflicts
+RUN npm ci --include=dev --legacy-peer-deps --prefer-offline --no-audit && \
     npm cache clean --force
 
 # Copy application code
