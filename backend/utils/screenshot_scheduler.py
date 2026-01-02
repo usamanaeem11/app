@@ -1,8 +1,9 @@
 """
 Screenshot Scheduler
-Manages automatic screenshot capture for active time entries
+Manages automatic screenshot capture for active time entries with random intervals
 """
 import asyncio
+import random
 from datetime import datetime, timezone
 from typing import Dict, Set
 import logging
@@ -68,11 +69,15 @@ class ScreenshotScheduler:
         logger.info(f"Stopped screenshot timer for entry {entry_id}")
 
     async def _screenshot_loop(self, entry_id: str, user_id: str, company_id: str, interval: int):
-        """Background task to capture screenshots at intervals"""
+        """Background task to capture screenshots at random intervals (30s - 10min)"""
         try:
             while entry_id in self.active_timers:
-                # Wait for the specified interval
-                await asyncio.sleep(interval)
+                # Generate random interval between 30 seconds and 10 minutes (600 seconds)
+                random_interval = random.randint(30, 600)
+                logger.info(f"Next screenshot for entry {entry_id} in {random_interval}s")
+
+                # Wait for the random interval
+                await asyncio.sleep(random_interval)
 
                 # Check if timer is still active
                 if entry_id not in self.active_timers:
@@ -82,7 +87,7 @@ class ScreenshotScheduler:
                 if self.screenshot_callback:
                     try:
                         await self.screenshot_callback(entry_id, user_id, company_id)
-                        logger.info(f"Screenshot captured for entry {entry_id}")
+                        logger.info(f"Screenshot captured for entry {entry_id} after {random_interval}s wait")
                     except Exception as e:
                         logger.error(f"Error capturing screenshot for entry {entry_id}: {e}")
 

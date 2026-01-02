@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager
 from utils.db_adapter import SupabaseDatabase
 from db import get_db
 from utils.screenshot_scheduler import screenshot_scheduler
+from utils.screen_recording_scheduler import screen_recording_scheduler
 from utils.id_generator import (
     generate_entry_id, generate_screenshot_id, generate_log_id,
     generate_company_id, generate_user_id
@@ -44,6 +45,10 @@ from routes.video_screenshots import router as video_router
 from routes.employee_assignments import router as assignments_router
 from routes.work_agreements import router as agreements_router
 from routes.scheduled_timers import router as scheduled_timers_router
+from routes.work_submissions import router as work_submissions_router
+from routes.notifications import router as notifications_router
+from routes.activity_history import router as activity_history_router
+from routes.screen_recordings import router as screen_recordings_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -786,6 +791,8 @@ async def capture_screenshot_callback(entry_id: str, user_id: str, company_id: s
     """Callback function to capture screenshots automatically"""
     try:
         from utils.consent_checker import ConsentChecker
+        from routes.activity_history import create_activity_entry
+        from routes.notifications import create_notification
 
         # Check screenshot consent
         consent_result = await ConsentChecker.check_screenshot_consent(db, user_id)
@@ -818,11 +825,108 @@ async def capture_screenshot_callback(entry_id: str, user_id: str, company_id: s
         await db.screenshots.insert_one(screenshot_doc)
         logger.info(f"Auto-captured screenshot {screenshot_id} for entry {entry_id}")
 
+        # Create activity history entry
+        await create_activity_entry(
+            db=db,
+            company_id=company_id,
+            user_id=user_id,
+            entry_id=entry_id,
+            activity_type="screenshot_captured",
+            description="Screenshot captured automatically",
+            metadata={"screenshot_id": screenshot_id}
+        )
+
+        # Notify manager (low priority)
+        manager_assignment = await db.manager_assignments.find_one({
+            "employee_id": user_id,
+            "active": True
+        })
+
+        if manager_assignment:
+            user = await db.users.find_one({"user_id": user_id})
+            await create_notification(
+                db=db,
+                company_id=company_id,
+                user_id=manager_assignment["manager_id"],
+                notification_type="screenshot_captured",
+                title="Screenshot Captured",
+                message=f"{user.get('name', 'Employee')} - Screenshot captured",
+                data={"screenshot_id": screenshot_id, "employee_id": user_id},
+                priority="low"
+            )
+
     except Exception as e:
         logger.error(f"Error in capture_screenshot_callback: {e}")
 
-# Set the screenshot callback
+# Screen recording capture callback
+async def capture_screen_recording_callback(entry_id: str, user_id: str, company_id: str, duration: int = 30):
+    """Callback function to capture 30-second screen recordings automatically (Business plan only)"""
+    try:
+        from utils.consent_checker import ConsentChecker
+        from routes.activity_history import create_activity_entry
+        from routes.notifications import create_notification
+        from utils.id_generator import generate_id
+
+        # Check screen recording consent (Business plan + full-time + consent)
+        consent_result = await ConsentChecker.check_screen_recording_consent(db, user_id, company_id)
+        if not consent_result["has_consent"]:
+            logger.warning(f"Screen recording skipped for user {user_id}: {consent_result['reason']}")
+            return
+
+        # Create a placeholder recording (actual recording would come from desktop app)
+        recording_id = generate_id("recording")
+        recording_doc = {
+            "recording_id": recording_id,
+            "user_id": user_id,
+            "company_id": company_id,
+            "entry_id": entry_id,
+            "recording_url": f"placeholder_{recording_id}.mp4",  # Would be real S3 URL in production
+            "duration": duration,
+            "file_size": 0,  # Would be actual size in production
+            "thumbnail_url": f"placeholder_{recording_id}_thumb.jpg",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "metadata": {}
+        }
+
+        await db.screen_recordings.insert_one(recording_doc)
+        logger.info(f"Auto-captured {duration}s screen recording {recording_id} for entry {entry_id}")
+
+        # Create activity history entry
+        await create_activity_entry(
+            db=db,
+            company_id=company_id,
+            user_id=user_id,
+            entry_id=entry_id,
+            activity_type="recording_captured",
+            description=f"Screen recording captured ({duration}s)",
+            metadata={"recording_id": recording_id, "duration": duration}
+        )
+
+        # Notify manager (low priority)
+        manager_assignment = await db.manager_assignments.find_one({
+            "employee_id": user_id,
+            "active": True
+        })
+
+        if manager_assignment:
+            user = await db.users.find_one({"user_id": user_id})
+            await create_notification(
+                db=db,
+                company_id=company_id,
+                user_id=manager_assignment["manager_id"],
+                notification_type="recording_captured",
+                title="Screen Recording Captured",
+                message=f"{user.get('name', 'Employee')} - {duration}s recording",
+                data={"recording_id": recording_id, "employee_id": user_id},
+                priority="low"
+            )
+
+    except Exception as e:
+        logger.error(f"Error in capture_screen_recording_callback: {e}")
+
+# Set the callbacks
 screenshot_scheduler.set_screenshot_callback(capture_screenshot_callback)
+screen_recording_scheduler.set_recording_callback(capture_screen_recording_callback)
 
 # ==================== TIME ENTRIES ROUTES ====================
 @api_router.post("/time-entries")
@@ -849,14 +953,14 @@ async def create_time_entry(entry: TimeEntryCreate, user: dict = Depends(get_cur
     }
     await db.time_entries.insert_one(doc)
 
-    # Start screenshot scheduler if entry is active
+    # Start screenshot and screen recording schedulers if entry is active
     if not entry.end_time:
         company = await db.companies.find_one({"company_id": user["company_id"]})
         if company:
             tracking_policy = company.get("tracking_policy", {})
             screenshot_interval = tracking_policy.get("screenshot_interval", 600)
 
-            # Start the scheduler
+            # Start screenshot scheduler
             await screenshot_scheduler.start_timer(
                 entry_id=entry_id,
                 user_id=user["user_id"],
@@ -864,6 +968,14 @@ async def create_time_entry(entry: TimeEntryCreate, user: dict = Depends(get_cur
                 interval=screenshot_interval
             )
             logger.info(f"Started screenshot scheduler for entry {entry_id}")
+
+            # Start screen recording scheduler (runs independently)
+            await screen_recording_scheduler.start_recorder(
+                entry_id=entry_id,
+                user_id=user["user_id"],
+                company_id=user["company_id"]
+            )
+            logger.info(f"Started screen recording scheduler for entry {entry_id}")
 
     # Broadcast to company
     await manager.broadcast(user["company_id"], {
@@ -925,9 +1037,10 @@ async def update_time_entry(entry_id: str, data: TimeEntryUpdate, user: dict = D
         update_data["duration"] = int((data.end_time - start_time).total_seconds())
         update_data["status"] = "completed"
 
-        # Stop screenshot scheduler when entry is stopped
+        # Stop screenshot and screen recording schedulers when entry is stopped
         await screenshot_scheduler.stop_timer(entry_id)
-        logger.info(f"Stopped screenshot scheduler for entry {entry_id}")
+        await screen_recording_scheduler.stop_recorder(entry_id)
+        logger.info(f"Stopped screenshot and recording schedulers for entry {entry_id}")
 
     if data.idle_time is not None:
         update_data["idle_time"] = data.idle_time
@@ -936,9 +1049,10 @@ async def update_time_entry(entry_id: str, data: TimeEntryUpdate, user: dict = D
     if data.status:
         update_data["status"] = data.status
 
-        # Stop scheduler if status is changed to stopped/paused
+        # Stop schedulers if status is changed to stopped/paused
         if data.status in ["stopped", "paused", "completed"]:
             await screenshot_scheduler.stop_timer(entry_id)
+            await screen_recording_scheduler.stop_recorder(entry_id)
 
     await db.time_entries.update_one({"entry_id": entry_id}, {"$set": update_data})
 
@@ -2657,6 +2771,10 @@ api_router.include_router(outlook_router)
 api_router.include_router(assignments_router)
 api_router.include_router(agreements_router)
 api_router.include_router(scheduled_timers_router)
+api_router.include_router(work_submissions_router, prefix="/work-submissions", tags=["Work Submissions"])
+api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(activity_history_router, prefix="/activity-history", tags=["Activity History"])
+api_router.include_router(screen_recordings_router, prefix="/screen-recordings", tags=["Screen Recordings"])
 
 # Then include api_router into app
 app.include_router(api_router)

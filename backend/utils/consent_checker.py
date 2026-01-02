@@ -172,6 +172,62 @@ class ConsentChecker:
         }
 
     @staticmethod
+    async def check_screen_recording_consent(db, user_id: str, company_id: str) -> Dict:
+        """
+        Check if user has given consent for screen recording (Business plan only)
+
+        Returns:
+            {
+                "has_consent": bool,
+                "employment_type": str,
+                "plan": str,
+                "reason": str
+            }
+        """
+        # Check if company has Business plan
+        company = await db.companies.find_one({"company_id": company_id})
+        plan = company.get("subscription_plan", "starter") if company else "starter"
+
+        if plan != "business":
+            return {
+                "has_consent": False,
+                "plan": plan,
+                "reason": "Screen recording is only available on Business plan"
+            }
+
+        employment_type = await ConsentChecker.check_employment_type(db, user_id)
+
+        # Freelancers don't have screen recording
+        if employment_type == "freelancer":
+            return {
+                "has_consent": False,
+                "employment_type": "freelancer",
+                "plan": plan,
+                "reason": "Screen recording not available for freelancers"
+            }
+
+        # Full-time employees need active agreement with consent
+        agreement = await ConsentChecker.has_active_agreement(db, user_id)
+
+        if not agreement:
+            return {
+                "has_consent": False,
+                "employment_type": "full_time",
+                "plan": plan,
+                "reason": "No active work agreement found"
+            }
+
+        has_consent = agreement.get("screen_recording_consent", False)
+
+        return {
+            "has_consent": has_consent,
+            "employment_type": "full_time",
+            "plan": plan,
+            "agreement_id": agreement.get("agreement_id"),
+            "reason": "Consent given in work agreement" if has_consent else "Consent not given in work agreement"
+        }
+
+    @staticmethod
     async def log_consent_check(db, user_id: str, consent_type: str, result: Dict, ip_address: str = None, user_agent: str = None):
         """
         Log consent check for audit purposes
