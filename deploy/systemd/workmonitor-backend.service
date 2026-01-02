@@ -1,0 +1,26 @@
+[Unit]
+Description=WorkMonitor Backend API Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/workmonitor/backend
+Environment="PATH=/var/www/workmonitor/venv/bin"
+EnvironmentFile=/var/www/workmonitor/.env.production
+ExecStart=/var/www/workmonitor/venv/bin/uvicorn server:app --host 0.0.0.0 --port 8001 --workers 4
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/workmonitor/backend.log
+StandardError=append:/var/log/workmonitor/backend-error.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/workmonitor /tmp
+
+[Install]
+WantedBy=multi-user.target
