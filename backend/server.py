@@ -49,6 +49,9 @@ from routes.work_submissions import router as work_submissions_router
 from routes.notifications import router as notifications_router
 from routes.activity_history import router as activity_history_router
 from routes.screen_recordings import router as screen_recordings_router
+from routes.wages import router as wages_router
+from routes.expenses import router as expenses_router
+from routes.project_assignments import router as project_assignments_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2775,6 +2778,9 @@ api_router.include_router(work_submissions_router, prefix="/work-submissions", t
 api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(activity_history_router, prefix="/activity-history", tags=["Activity History"])
 api_router.include_router(screen_recordings_router, prefix="/screen-recordings", tags=["Screen Recordings"])
+api_router.include_router(wages_router, prefix="/wages", tags=["Wages"])
+api_router.include_router(expenses_router, prefix="/expenses", tags=["Expenses"])
+api_router.include_router(project_assignments_router, prefix="/project-assignments", tags=["Project Assignments"])
 
 # Then include api_router into app
 app.include_router(api_router)
