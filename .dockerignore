@@ -1,0 +1,127 @@
+# ============================================================
+# Docker Build Context Ignore File
+# Reduces build context size and improves build performance
+# ============================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.yarn
+.yarn/cache
+.yarn/patches
+.yarn/plugins
+.yarn/releases
+.yarn/sdks
+.yarn/versions
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.tox/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+.cache/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+LICENSE
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Backups
+*.bak
+*.backup
+backups/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Misc
+.editorconfig
+.prettierrc
+.eslintrc
+.babelrc
+craco.config.js
+tsconfig.json
+
+# Optional files
+DEPLOYMENT_INSTRUCTIONS.md
+TODO.md
+NOTES.md
+
+# Certificates (not needed at build time)
+ssl/certs/
+
+# Volumes
+data/
+volumes/
+postgres_data/
+minio_data/
