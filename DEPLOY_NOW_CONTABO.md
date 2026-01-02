@@ -237,7 +237,12 @@ source venv/bin/activate
 # Install dependencies
 cd backend
 pip install --upgrade pip
+
+# Install dependencies (with compatibility resolver)
 pip install -r requirements.txt
+
+# If you encounter dependency conflicts, try:
+# pip install --use-deprecated=legacy-resolver -r requirements.txt
 
 # Test database connection
 python -c "from db import get_db; print('✓ Database connected!')"
@@ -670,6 +675,58 @@ pip install -r requirements.txt
 
 # 5. File permissions
 sudo chown -R $USER:$USER /opt/workmonitor
+```
+
+### Dependency Conflicts During Installation
+
+**Symptoms**: Error like "these package versions have conflicting dependencies"
+
+**Solutions**:
+
+```bash
+cd /opt/workmonitor/backend
+source /opt/workmonitor/venv/bin/activate
+
+# Method 1: Upgrade pip and try again
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+# Method 2: Use legacy resolver
+pip install --use-deprecated=legacy-resolver -r requirements.txt
+
+# Method 3: Install in parts (if still failing)
+# Install core dependencies first
+pip install fastapi==0.110.1 uvicorn==0.25.0 pydantic==2.12.5
+pip install psycopg2-binary==2.9.10 python-dotenv==1.2.1
+pip install stripe==14.1.0 supabase==2.10.0
+
+# Then install AI/ML packages
+pip install google-genai==1.56.0 openai==1.99.9 litellm==1.80.0
+
+# Finally install remaining packages
+pip install -r requirements.txt --no-deps
+
+# Method 4: Fresh virtual environment
+cd /opt/workmonitor
+rm -rf venv
+python3.11 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r backend/requirements.txt
+```
+
+**Common conflicts and fixes**:
+
+```bash
+# httpx version conflict with google-genai
+# Fixed: httpx==0.28.1 (compatible with google-genai>=1.56.0)
+
+# If specific package causes issues, install separately:
+pip install httpx==0.28.1
+pip install google-genai==1.56.0
+
+# Then continue with requirements.txt
+pip install -r requirements.txt --no-deps
 ```
 
 ### Frontend Shows Blank Page
