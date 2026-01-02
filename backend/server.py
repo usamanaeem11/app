@@ -52,6 +52,10 @@ from routes.screen_recordings import router as screen_recordings_router
 from routes.wages import router as wages_router
 from routes.expenses import router as expenses_router
 from routes.project_assignments import router as project_assignments_router
+from routes.bank_accounts import router as bank_accounts_router
+from routes.payouts import router as payouts_router
+from routes.escrow import router as escrow_router
+from routes.recurring_payments import router as recurring_payments_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2781,6 +2785,10 @@ api_router.include_router(screen_recordings_router, prefix="/screen-recordings",
 api_router.include_router(wages_router, prefix="/wages", tags=["Wages"])
 api_router.include_router(expenses_router, prefix="/expenses", tags=["Expenses"])
 api_router.include_router(project_assignments_router, prefix="/project-assignments", tags=["Project Assignments"])
+api_router.include_router(bank_accounts_router, prefix="/bank-accounts", tags=["Bank Accounts"])
+api_router.include_router(payouts_router, prefix="/payouts", tags=["Payouts"])
+api_router.include_router(escrow_router, prefix="/escrow", tags=["Escrow"])
+api_router.include_router(recurring_payments_router, prefix="/recurring-payments", tags=["Recurring Payments"])
 
 # Then include api_router into app
 app.include_router(api_router)

@@ -32,6 +32,7 @@ import TeamChat from "./pages/TeamChat";
 import Checkout from "./pages/Checkout";
 import EmployeeAssignments from "./pages/EmployeeAssignments";
 import WorkAgreements from "./pages/WorkAgreements";
+import Expenses from "./pages/Expenses";
 
 // Router component that handles session_id detection
 function AppRouter() {
@@ -71,6 +72,7 @@ function AppRouter() {
         <Route path="team" element={<Team />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="payroll" element={<Payroll />} />
+        <Route path="expenses" element={<Expenses />} />
         <Route path="projects" element={<Projects />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="shifts" element={<Shifts />} />

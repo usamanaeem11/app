@@ -23,6 +23,7 @@ import {
   MessageSquare,
   UserCheck,
   FileSignature,
+  Wallet,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
@@ -40,6 +41,7 @@ const navItems = [
   { path: '/user-management', label: 'User Management', icon: UserCog, roles: ['admin'] },
   { path: '/leaves', label: 'Leaves', icon: Calendar, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/payroll', label: 'Payroll', icon: DollarSign, roles: ['admin', 'hr'] },
+  { path: '/expenses', label: 'Expenses & Payouts', icon: Wallet, roles: ['admin', 'manager', 'employee', 'hr'] },
   { path: '/invoices', label: 'Invoices', icon: Receipt, roles: ['admin', 'hr'] },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['admin'] },
   { path: '/employee-assignments', label: 'Assignments', icon: UserCheck, roles: ['admin', 'manager', 'employee'] },
