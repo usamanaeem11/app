@@ -123,6 +123,88 @@ export const payrollCalculatorAPI = {
   getDeductionTemplates: () => api.get('/payroll-calculator/deduction-templates'),
 };
 
+// GPS & Location APIs
+export const gpsAPI = {
+  trackLocation: (data) => api.post('/gps/locations', data),
+  getLocations: (params) => api.get('/gps/locations', { params }),
+  createGeofence: (data) => api.post('/gps/geofences', data),
+  getGeofences: () => api.get('/gps/geofences'),
+  updateGeofence: (id, data) => api.put(`/gps/geofences/${id}`, data),
+  deleteGeofence: (id) => api.delete(`/gps/geofences/${id}`),
+  createFieldSite: (data) => api.post('/gps/field-sites', data),
+  getFieldSites: () => api.get('/gps/field-sites'),
+  startRoute: (data) => api.post('/gps/routes/start', data),
+  endRoute: (id, data) => api.post(`/gps/routes/${id}/end`, data),
+  getRoutes: (params) => api.get('/gps/routes', { params }),
+};
+
+// Productivity Monitoring APIs
+export const productivityAPI = {
+  trackAppUsage: (data) => api.post('/productivity/app-usage', data),
+  trackWebsiteUsage: (data) => api.post('/productivity/website-usage', data),
+  getAppUsageSummary: (params) => api.get('/productivity/app-usage/summary', { params }),
+  getWebsiteUsageSummary: (params) => api.get('/productivity/website-usage/summary', { params }),
+  createAppCategory: (data) => api.post('/productivity/app-categories', data),
+  getAppCategories: () => api.get('/productivity/app-categories'),
+  createWebsiteCategory: (data) => api.post('/productivity/website-categories', data),
+  getWebsiteCategories: () => api.get('/productivity/website-categories'),
+  blockApp: (data) => api.post('/productivity/blocked-apps', data),
+  getBlockedApps: () => api.get('/productivity/blocked-apps'),
+  blockWebsite: (data) => api.post('/productivity/blocked-websites', data),
+  getBlockedWebsites: () => api.get('/productivity/blocked-websites'),
+  getProductivityScore: (params) => api.get('/productivity/productivity-score', { params }),
+};
+
+// Idle & Break Tracking APIs
+export const trackingAPI = {
+  startIdle: (data) => api.post('/tracking/idle/start', data),
+  endIdle: (id, data) => api.post(`/tracking/idle/${id}/end`, data),
+  getIdlePeriods: (params) => api.get('/tracking/idle', { params }),
+  startBreak: (data) => api.post('/tracking/breaks/start', data),
+  endBreak: (id, data) => api.post(`/tracking/breaks/${id}/end`, data),
+  getBreaks: (params) => api.get('/tracking/breaks', { params }),
+  getBreakSummary: (params) => api.get('/tracking/breaks/summary', { params }),
+};
+
+// Integration APIs
+export const integrationAPI = {
+  create: (data) => api.post('/integrations', data),
+  getAll: () => api.get('/integrations'),
+  get: (id) => api.get(`/integrations/${id}`),
+  update: (id, data) => api.put(`/integrations/${id}`, data),
+  delete: (id) => api.delete(`/integrations/${id}`),
+  sync: (id, data) => api.post(`/integrations/${id}/sync`, data),
+  getLogs: (id, params) => api.get(`/integrations/${id}/logs`, { params }),
+  getAvailableTypes: () => api.get('/integrations/types/available'),
+};
+
+// Security & Compliance APIs
+export const securityAPI = {
+  createAuditLog: (data) => api.post('/security/audit-logs', data),
+  getAuditLogs: (params) => api.get('/security/audit-logs', { params }),
+  logUSBEvent: (data) => api.post('/security/usb-events', data),
+  getUSBEvents: (params) => api.get('/security/usb-events', { params }),
+  createDLPIncident: (data) => api.post('/security/dlp-incidents', data),
+  getDLPIncidents: (params) => api.get('/security/dlp-incidents', { params }),
+  createAlert: (data) => api.post('/security/alerts', data),
+  getAlerts: (params) => api.get('/security/alerts', { params }),
+  resolveAlert: (id, data) => api.put(`/security/alerts/${id}/resolve`, data),
+  getDashboard: () => api.get('/security/dashboard'),
+};
+
+// Analytics APIs
+export const analyticsAPI = {
+  getProductivityDashboard: (params) => api.get('/analytics/productivity-dashboard', { params }),
+  trackFocusTime: (data) => api.post('/analytics/focus-time', data),
+  getFocusTime: (params) => api.get('/analytics/focus-time', { params }),
+  createMeeting: (data) => api.post('/analytics/meetings', data),
+  getMeetings: (params) => api.get('/analytics/meetings', { params }),
+  getMeetingSummary: (params) => api.get('/analytics/meetings/summary', { params }),
+  getBurnoutRisk: (params) => api.get('/analytics/burnout-risk', { params }),
+  getTeamProductivity: (params) => api.get('/analytics/team-productivity', { params }),
+  getTrends: (params) => api.get('/analytics/trends', { params }),
+};
+
 // Dashboard APIs
 export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),

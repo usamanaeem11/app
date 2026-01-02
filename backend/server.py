@@ -56,6 +56,12 @@ from routes.bank_accounts import router as bank_accounts_router
 from routes.payouts import router as payouts_router
 from routes.escrow import router as escrow_router
 from routes.recurring_payments import router as recurring_payments_router
+from routes.gps_tracking import router as gps_router
+from routes.productivity_monitoring import router as productivity_router
+from routes.idle_break_tracking import router as idle_break_router
+from routes.integrations import router as integrations_router
+from routes.security_compliance import router as security_router
+from routes.analytics import router as analytics_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2789,6 +2795,12 @@ api_router.include_router(bank_accounts_router, prefix="/bank-accounts", tags=["
 api_router.include_router(payouts_router, prefix="/payouts", tags=["Payouts"])
 api_router.include_router(escrow_router, prefix="/escrow", tags=["Escrow"])
 api_router.include_router(recurring_payments_router, prefix="/recurring-payments", tags=["Recurring Payments"])
+api_router.include_router(gps_router)
+api_router.include_router(productivity_router)
+api_router.include_router(idle_break_router)
+api_router.include_router(integrations_router)
+api_router.include_router(security_router)
+api_router.include_router(analytics_router)
 
 # Then include api_router into app
 app.include_router(api_router)
