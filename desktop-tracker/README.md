@@ -40,18 +40,41 @@ npm run build:linux  # Linux
 
 ## Configuration
 
-The tracker uses environment variables and local storage:
-
 ### Environment Variables
 
-- `WORKMONITOR_API_URL`: Backend API URL (default: http://localhost:8001/api)
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update `.env` with your settings:
+   ```env
+   WORKMONITOR_API_URL=http://localhost:8001/api
+   SCREENSHOT_INTERVAL=300
+   IDLE_TIMEOUT=300
+   AUTO_START=true
+   BLUR_SCREENSHOTS=false
+   ```
 
 ### Settings (in-app)
+
+Access via system tray > Settings:
 
 - **Screenshot Interval**: How often to capture screenshots (60-3600 seconds)
 - **Idle Timeout**: Time before marking as idle (60-1800 seconds)
 - **Auto-Start**: Launch tracker on system startup
 - **Blur Screenshots**: Apply blur to captured screenshots
+
+### Icon Assets Required
+
+Create the following icon files in the `assets/` directory:
+
+- **icon.png** - Main application icon (512x512 PNG)
+- **icon.ico** - Windows icon (256x256 ICO format)
+- **icon.icns** - macOS icon (512x512 ICNS format)
+- **tray-icon.png** - System tray icon (32x32 PNG with transparency)
+
+**Creating Icons**: Use [icon.kitchen](https://icon.kitchen/) or [makeappicon.com](https://makeappicon.com/) to generate all formats from a single design. Recommended: green background (#10b981) with white stopwatch icon.
 
 ## API Endpoints Used
 

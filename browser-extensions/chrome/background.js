@@ -1,6 +1,6 @@
 // Working Tracker - Chrome Extension Background Service Worker
 
-const API_URL = 'https://your-api-url.com/api'; // Replace with actual API URL
+const API_URL = 'http://localhost:8001/api';
 
 // Track active tab and time
 let activeTabId = null;

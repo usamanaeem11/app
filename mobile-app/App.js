@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -12,7 +13,7 @@ import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 // API Configuration
-const API_URL = 'https://your-api-url.com/api'; // Replace with actual API URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001/api';
 
 // Create axios instance
 const api = axios.create({
@@ -209,6 +210,3 @@ export default function App() {
     </AuthContext.Provider>
   );
 }
-
-// Import missing components
-import { View, Text, ActivityIndicator } from 'react-native';
