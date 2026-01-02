@@ -51,9 +51,10 @@ async def create_scheduled_timer(
     user: dict = Depends(get_current_user)
 ):
     """
-    Create a scheduled timer (Admin/Manager only)
+    Create a scheduled timer (Admin/Manager only, Full-time employees only)
     """
     from utils.id_generator import generate_id
+    from utils.consent_checker import ConsentChecker
 
     if user["role"] not in ["admin", "manager"]:
         raise HTTPException(status_code=403, detail="Only admins and managers can create scheduled timers")
@@ -67,6 +68,22 @@ async def create_scheduled_timer(
     })
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
+
+    # Check employment type - only full-time employees can have scheduled timers
+    employment_type = employee.get("employment_type", "freelancer")
+    if employment_type != "full_time":
+        raise HTTPException(
+            status_code=403,
+            detail="Scheduled timers are only available for full-time employees. This employee is a freelancer."
+        )
+
+    # Check if employee has given consent for auto timers
+    consent_result = await ConsentChecker.check_auto_timer_consent(db, data.employee_id)
+    if not consent_result["has_consent"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Employee has not given consent for automatic timers. Reason: {consent_result['reason']}"
+        )
 
     # Check if manager is assigned to employee
     if user["role"] == "manager":

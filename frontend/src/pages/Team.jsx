@@ -29,6 +29,8 @@ import {
   Search,
   MoreVertical,
   Edit2,
+  Briefcase,
+  UserCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,7 +42,7 @@ export default function Team() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const [inviteData, setInviteData] = useState({ email: '', role: 'employee' });
+  const [inviteData, setInviteData] = useState({ email: '', role: 'employee', employment_type: 'freelancer' });
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function Team() {
       await companyAPI.invite(inviteData);
       toast.success('Invitation sent successfully');
       setShowInviteDialog(false);
-      setInviteData({ email: '', role: 'employee' });
+      setInviteData({ email: '', role: 'employee', employment_type: 'freelancer' });
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to send invitation');
     } finally {
@@ -84,6 +86,7 @@ export default function Team() {
       await teamAPI.updateMember(selectedMember.user_id, {
         role: selectedMember.role,
         hourly_rate: selectedMember.hourly_rate,
+        employment_type: selectedMember.employment_type,
       });
       toast.success('Team member updated');
       setShowEditDialog(false);
@@ -114,6 +117,23 @@ export default function Team() {
       default:
         return <Badge className="bg-zinc-500/20 text-zinc-400 border-0">Employee</Badge>;
     }
+  };
+
+  const getEmploymentTypeBadge = (employmentType) => {
+    if (employmentType === 'full_time') {
+      return (
+        <Badge className="bg-emerald-500/20 text-emerald-400 border-0">
+          <Briefcase className="w-3 h-3 mr-1" />
+          Full-time
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-blue-500/20 text-blue-400 border-0">
+        <UserCircle className="w-3 h-3 mr-1" />
+        Freelancer
+      </Badge>
+    );
   };
 
   const filteredTeam = team.filter(
@@ -178,6 +198,36 @@ export default function Team() {
                     {user?.role === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-zinc-400">Employment Type</label>
+                <Select
+                  value={inviteData.employment_type}
+                  onValueChange={(value) => setInviteData({ ...inviteData, employment_type: value })}
+                >
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    <SelectItem value="freelancer">
+                      <div className="flex items-center gap-2">
+                        <UserCircle className="w-4 h-4" />
+                        Freelancer
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="full_time">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Full-time Employee
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-zinc-500">
+                  {inviteData.employment_type === 'full_time'
+                    ? 'Can have automatic timers with consent'
+                    : 'Manual time tracking control'}
+                </p>
               </div>
               <Button
                 onClick={handleInvite}
@@ -310,11 +360,14 @@ export default function Team() {
                   {member.status || 'active'}
                 </Badge>
               </div>
-              {member.hourly_rate > 0 && (
-                <p className="text-xs text-zinc-500 mt-2">
-                  Hourly Rate: <span className="text-emerald-400">${member.hourly_rate}/hr</span>
-                </p>
-              )}
+              <div className="flex items-center gap-2 mt-2">
+                {getEmploymentTypeBadge(member.employment_type || 'freelancer')}
+                {member.hourly_rate > 0 && (
+                  <p className="text-xs text-zinc-500">
+                    Rate: <span className="text-emerald-400">${member.hourly_rate}/hr</span>
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -369,6 +422,39 @@ export default function Team() {
                     {user?.role === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-zinc-400">Employment Type</label>
+                <Select
+                  value={selectedMember.employment_type || 'freelancer'}
+                  onValueChange={(value) =>
+                    setSelectedMember({ ...selectedMember, employment_type: value })
+                  }
+                >
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    <SelectItem value="freelancer">
+                      <div className="flex items-center gap-2">
+                        <UserCircle className="w-4 h-4" />
+                        Freelancer
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="full_time">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Full-time Employee
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-zinc-500">
+                  {selectedMember.employment_type === 'full_time'
+                    ? 'Full-time employees can have automatic timers and scheduled tracking with consent'
+                    : 'Freelancers have full manual control over time tracking'}
+                </p>
               </div>
 
               <div className="space-y-2">

@@ -41,7 +41,10 @@ const WorkAgreements = () => {
       { name: 'Activity Tracking', enabled: true, description: 'Monitor app and website usage' },
       { name: 'Automatic Timer', enabled: false, description: 'Schedule automatic timer start/stop' },
     ],
-    clauses: []
+    clauses: [],
+    auto_timer_consent: false,
+    screenshot_consent: false,
+    activity_tracking_consent: false
   });
 
   const [newClause, setNewClause] = useState({ title: '', content: '', is_mandatory: false });
@@ -201,9 +204,21 @@ const WorkAgreements = () => {
         { name: 'Activity Tracking', enabled: true, description: 'Monitor app and website usage' },
         { name: 'Automatic Timer', enabled: false, description: 'Schedule automatic timer start/stop' },
       ],
-      clauses: []
+      clauses: [],
+      auto_timer_consent: false,
+      screenshot_consent: false,
+      activity_tracking_consent: false
     });
     setNewClause({ title: '', content: '', is_mandatory: false });
+  };
+
+  const getSelectedEmployee = () => {
+    return teamMembers.find(m => m.user_id === formData.employee_id);
+  };
+
+  const isFullTimeEmployee = () => {
+    const selectedEmployee = getSelectedEmployee();
+    return selectedEmployee?.employment_type === 'full_time';
   };
 
   const getStatusBadge = (agreement) => {
@@ -349,6 +364,60 @@ const WorkAgreements = () => {
                     ))}
                   </div>
                 </div>
+
+                <Separator className="bg-zinc-800" />
+
+                {isFullTimeEmployee() && (
+                  <div className="space-y-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                        Full-time Employee Consent Required
+                      </Badge>
+                    </div>
+                    <Label className="text-zinc-300 text-base">Automatic Tracking Consent</Label>
+                    <p className="text-xs text-zinc-400 mb-3">
+                      Full-time employees must give explicit consent for automatic tracking features.
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
+                        <Checkbox
+                          checked={formData.auto_timer_consent}
+                          onCheckedChange={(checked) => setFormData({ ...formData, auto_timer_consent: checked })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-zinc-200">Automatic Timer Consent</p>
+                          <p className="text-xs text-zinc-500">Allow admin/manager to schedule automatic timer start/stop</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
+                        <Checkbox
+                          checked={formData.screenshot_consent}
+                          onCheckedChange={(checked) => setFormData({ ...formData, screenshot_consent: checked })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-zinc-200">Screenshot Monitoring Consent</p>
+                          <p className="text-xs text-zinc-500">Allow automatic screenshot capture during work hours</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
+                        <Checkbox
+                          checked={formData.activity_tracking_consent}
+                          onCheckedChange={(checked) => setFormData({ ...formData, activity_tracking_consent: checked })}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-zinc-200">Activity Tracking Consent</p>
+                          <p className="text-xs text-zinc-500">Allow tracking of applications and websites used during work</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <Separator className="bg-zinc-800" />
 

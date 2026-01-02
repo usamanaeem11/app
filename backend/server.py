@@ -785,6 +785,14 @@ async def update_team_member(user_id: str, data: dict, user: dict = Depends(get_
 async def capture_screenshot_callback(entry_id: str, user_id: str, company_id: str):
     """Callback function to capture screenshots automatically"""
     try:
+        from utils.consent_checker import ConsentChecker
+
+        # Check screenshot consent
+        consent_result = await ConsentChecker.check_screenshot_consent(db, user_id)
+        if not consent_result["has_consent"]:
+            logger.warning(f"Screenshot capture skipped for user {user_id}: {consent_result['reason']}")
+            return
+
         # Get company tracking policy
         company = await db.companies.find_one({"company_id": company_id})
         if not company:

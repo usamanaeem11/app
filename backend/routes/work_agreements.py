@@ -33,6 +33,9 @@ class WorkAgreementCreate(BaseModel):
     end_date: Optional[str] = None
     features: List[AgreementFeature] = []
     clauses: List[AgreementClause] = []
+    auto_timer_consent: bool = False
+    screenshot_consent: bool = False
+    activity_tracking_consent: bool = False
 
 
 class WorkAgreementUpdate(BaseModel):
@@ -77,6 +80,9 @@ async def create_work_agreement(
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
 
+    # Check if employee is full-time (consent only applies to full-time employees)
+    is_full_time = employee.get("employment_type") == "full_time"
+
     # Create agreement
     agreement_id = generate_id("agreement")
     agreement_doc = {
@@ -92,6 +98,9 @@ async def create_work_agreement(
         "features": [f.dict() for f in data.features],
         "admin_signed": False,
         "employee_signed": False,
+        "auto_timer_consent": data.auto_timer_consent if is_full_time else False,
+        "screenshot_consent": data.screenshot_consent if is_full_time else False,
+        "activity_tracking_consent": data.activity_tracking_consent if is_full_time else False,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -400,9 +409,12 @@ async def sign_agreement(
         update_data["employee_signature"] = data.signature
         update_data["employee_signed_at"] = datetime.now(timezone.utc).isoformat()
 
-    # If both signed, change status to active
+    # If both signed, change status to active and record consent timestamp
     if (is_admin and agreement.get("employee_signed")) or (is_employee and agreement.get("admin_signed")):
         update_data["status"] = "active"
+        if is_employee:
+            # Employee signed - record consent timestamp
+            update_data["consent_given_at"] = datetime.now(timezone.utc).isoformat()
 
     await db.work_agreements.update_one(
         {"agreement_id": agreement_id},
