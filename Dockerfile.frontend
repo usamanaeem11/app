@@ -11,7 +11,8 @@ LABEL version="1.0.0"
 
 # Set environment variables
 ENV NODE_ENV=production \
-    GENERATE_SOURCEMAP=false
+    GENERATE_SOURCEMAP=false \
+    DISABLE_ESLINT_PLUGIN=true
 
 # Install dependencies
 RUN apk add --no-cache \
@@ -25,8 +26,9 @@ WORKDIR /app
 # Copy package files
 COPY frontend/package.json frontend/package-lock.json ./
 
-# Install dependencies
-RUN npm ci --prefer-offline --no-audit && \
+# Install ALL dependencies (including devDependencies) for the build
+# ESLint plugins are needed during the build process
+RUN npm ci --include=dev --prefer-offline --no-audit && \
     npm cache clean --force
 
 # Copy application code

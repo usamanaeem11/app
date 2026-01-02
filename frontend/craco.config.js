@@ -34,6 +34,7 @@ if (config.enableHealthCheck) {
 
 const webpackConfig = {
   eslint: {
+    enable: process.env.DISABLE_ESLINT_PLUGIN !== "true",
     configure: {
       extends: ["plugin:react-hooks/recommended"],
       rules: {
