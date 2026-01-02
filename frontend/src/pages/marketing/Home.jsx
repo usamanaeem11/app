@@ -5,49 +5,69 @@ import { Card, CardContent } from '../../components/ui/card';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-            Complete Employee Monitoring & Time Tracking Platform
+      <section className="container mx-auto px-4 py-24">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-full mb-8">
+            <span className="text-sm font-semibold text-blue-700">Trusted by 500+ businesses worldwide</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-8 leading-tight">
+            Complete Employee Monitoring &
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> Time Tracking</span>
           </h1>
-          <p className="text-xl text-slate-600 mb-8">
-            Track time, monitor productivity, manage payroll, and optimize your workforce with AI-powered insights.
-            Everything you need in one powerful platform.
+          <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            Track time, monitor productivity, manage payroll, and optimize your workforce with AI-powered insights. Everything you need in one powerful platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8" asChild>
+            <Button size="lg" className="text-lg px-10 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl shadow-blue-500/30 font-semibold" asChild>
               <Link to="/signup">Start Free Trial</Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+            <Button size="lg" variant="outline" className="text-lg px-10 h-14 border-2 border-slate-300 hover:border-slate-400 font-semibold" asChild>
               <Link to="/demo">Book a Demo</Link>
             </Button>
           </div>
-          <p className="text-sm text-slate-500 mt-4">
-            14-day free trial • No credit card required • Cancel anytime
+          <p className="text-sm text-slate-500 mt-6 flex items-center justify-center gap-4 flex-wrap">
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              14-day free trial
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              No credit card required
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Cancel anytime
+            </span>
           </p>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">10K+</div>
-            <div className="text-slate-600 mt-2">Active Users</div>
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent">10K+</div>
+            <div className="text-slate-600 mt-3 font-medium">Active Users</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">500+</div>
-            <div className="text-slate-600 mt-2">Companies</div>
+          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent">500+</div>
+            <div className="text-slate-600 mt-3 font-medium">Companies</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">99.9%</div>
-            <div className="text-slate-600 mt-2">Uptime</div>
+          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent">99.9%</div>
+            <div className="text-slate-600 mt-3 font-medium">Uptime</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-blue-600">24/7</div>
-            <div className="text-slate-600 mt-2">Support</div>
+          <div className="text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-transparent">24/7</div>
+            <div className="text-slate-600 mt-3 font-medium">Support</div>
           </div>
         </div>
       </section>
@@ -208,19 +228,22 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
-        <div className="max-w-3xl mx-auto text-center bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-12 text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Workforce Management?</h2>
-          <p className="text-xl mb-8 text-blue-100">
+        <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 rounded-3xl p-16 text-white shadow-2xl shadow-blue-500/20">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6">Ready to Transform Your Workforce Management?</h2>
+          <p className="text-xl md:text-2xl mb-10 text-blue-50 max-w-2xl mx-auto">
             Join thousands of companies using Working Tracker to boost productivity and streamline operations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="text-lg px-8" asChild>
+            <Button size="lg" className="text-lg px-10 h-14 bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-xl" asChild>
               <Link to="/signup">Start Free Trial</Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 border-white text-white hover:bg-white hover:text-blue-600" asChild>
+            <Button size="lg" variant="outline" className="text-lg px-10 h-14 border-2 border-white text-white hover:bg-white/10 font-semibold" asChild>
               <Link to="/pricing">View Pricing</Link>
             </Button>
           </div>
+          <p className="text-sm text-blue-100 mt-6">
+            No credit card required • Setup in minutes • Cancel anytime
+          </p>
         </div>
       </section>
     </div>
