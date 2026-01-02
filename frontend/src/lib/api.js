@@ -106,6 +106,23 @@ export const payrollAPI = {
   process: (payrollId) => api.put(`/payroll/${payrollId}/process`),
 };
 
+// Time Card APIs
+export const timeCardAPI = {
+  getEmployeeTimeCard: (userId, params) => api.get(`/time-cards/employee/${userId}`, { params }),
+  getSummary: (params) => api.get('/time-cards/summary', { params }),
+  updateEntry: (entryId, data) => api.put(`/time-cards/entry/${entryId}`, data),
+  approveEntry: (entryId, data) => api.post(`/time-cards/entry/${entryId}/approve`, data),
+  bulkApprove: (data) => api.post('/time-cards/approve-bulk', data),
+};
+
+// Payroll Calculator APIs
+export const payrollCalculatorAPI = {
+  calculate: (data) => api.post('/payroll-calculator/calculate', data),
+  calculateBulk: (data) => api.post('/payroll-calculator/calculate-bulk', data),
+  previewAndCreate: (data) => api.post('/payroll-calculator/preview-and-create', data),
+  getDeductionTemplates: () => api.get('/payroll-calculator/deduction-templates'),
+};
+
 // Dashboard APIs
 export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
