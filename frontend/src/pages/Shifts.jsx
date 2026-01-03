@@ -73,6 +73,7 @@ export default function Shifts() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWeek]);
 
   const fetchData = async () => {

@@ -74,6 +74,7 @@ export default function Screenshots() {
 
   useEffect(() => {
     fetchScreenshots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   const fetchScreenshots = async () => {

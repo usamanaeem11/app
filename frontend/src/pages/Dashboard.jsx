@@ -44,6 +44,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function Dashboard() {
         fetchData();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
   useEffect(() => {

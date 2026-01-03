@@ -78,11 +78,12 @@ export default function Settings() {
   useEffect(() => {
     fetchCompany();
     fetchIntegrations();
-    
+
     // Check for calendar connection callback
     if (searchParams.get('calendar') === 'connected') {
       toast.success('Google Calendar connected successfully!');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const fetchCompany = async () => {
